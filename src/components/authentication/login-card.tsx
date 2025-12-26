@@ -473,11 +473,15 @@ export function LoginCard() {
       router.push("/");
       router.refresh();
     } catch (err) {
-      toast.error(
-        err instanceof Error
-          ? err.message
-          : "Network error. Please check your connection and try again."
-      );
+      if (err instanceof Error && err.message.includes("429")) {
+        toast.error("Too many requests. Please try again later.");
+      } else {
+        toast.error(
+          err instanceof Error
+            ? err.message
+            : "Network error. Please check your connection and try again."
+        );
+      }
       setLoading(false);
     }
   };
