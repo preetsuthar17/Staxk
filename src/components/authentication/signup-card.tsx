@@ -313,7 +313,7 @@ function getButtonText(loading: boolean, currentStep: number): React.ReactNode {
   if (loading) {
     return <Spinner />;
   }
-  if (currentStep === 3) {
+  if (currentStep === 2) {
     return "Sign up";
   }
   return "Continue";
@@ -332,14 +332,14 @@ export function SignupCard() {
   const [currentStep, setCurrentStep] = useState(0);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  const progressValue = ((currentStep + 1) / 4) * 100;
+  const progressValue = ((currentStep + 1) / 3) * 100;
 
   useEffect(() => {
     const timer = setTimeout(() => {
       if (inputRef.current) {
         inputRef.current.focus();
       } else {
-        const inputIds = ["name", "email", "password", "confirm-password"];
+        const inputIds = ["name", "email", "password"];
         const inputId = inputIds[currentStep];
         if (inputId) {
           const input = document.getElementById(inputId) as HTMLInputElement;
@@ -388,6 +388,14 @@ export function SignupCard() {
       toast.error("Password must be at least 8 characters");
       return false;
     }
+    if (!confirmPassword.trim()) {
+      toast.error("Please confirm your password");
+      return false;
+    }
+    if (password !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return false;
+    }
     return true;
   };
 
@@ -396,12 +404,8 @@ export function SignupCard() {
       if (validateStep0()) {
         setCurrentStep(1);
       }
-    } else if (currentStep === 1) {
-      if (validateStep1()) {
-        setCurrentStep(2);
-      }
-    } else if (currentStep === 2 && validateStep2()) {
-      setCurrentStep(3);
+    } else if (currentStep === 1 && validateStep1()) {
+      setCurrentStep(2);
     }
   };
 
@@ -420,7 +424,7 @@ export function SignupCard() {
       selectionEnd === input.value.length;
     const isEmpty = input.value.length === 0;
 
-    if ((isAtEnd || isEmpty) && currentStep < 3) {
+    if ((isAtEnd || isEmpty) && currentStep < 2) {
       e.preventDefault();
       handleContinue();
     }
@@ -448,7 +452,7 @@ export function SignupCard() {
       selectionEnd === input.value.length;
     const isEmpty = input.value.length === 0;
 
-    if (!e.shiftKey && (isAtEnd || isEmpty) && currentStep < 3) {
+    if (!e.shiftKey && (isAtEnd || isEmpty) && currentStep < 2) {
       e.preventDefault();
       handleContinue();
     } else if (e.shiftKey && isAtStart && currentStep > 0) {
@@ -480,7 +484,7 @@ export function SignupCard() {
   const handleEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
     const input = e.currentTarget;
     e.preventDefault();
-    if (currentStep === 3) {
+    if (currentStep === 2) {
       const form = input.closest("form");
       if (form) {
         form.requestSubmit();
@@ -511,13 +515,12 @@ export function SignupCard() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (currentStep !== 3) {
+    if (currentStep !== 2) {
       handleContinue();
       return;
     }
 
-    if (password !== confirmPassword) {
-      toast.error("Passwords do not match");
+    if (!validateStep2()) {
       return;
     }
 
@@ -607,78 +610,77 @@ export function SignupCard() {
     </Label>
   );
 
-  const renderPasswordField = () => (
-    <Label className="flex flex-col items-start gap-2 p-1" htmlFor="password">
-      <span className="text-muted-foreground text-sm">Enter your password</span>
-      <InputGroup>
-        <InputGroupInput
-          autoComplete="new-password"
-          autoFocus
-          disabled={loading}
-          id="password"
-          minLength={8}
-          onChange={(e) => setPassword(e.target.value)}
-          onKeyDown={handleKeyboardNavigation}
-          placeholder="Password"
-          ref={setInputRef}
-          required
-          type={showPassword ? "text" : "password"}
-          value={password}
-        />
-        <InputGroupButton
-          aria-label={showPassword ? "Hide password" : "Show password"}
-          className="h-9.5 w-9.5 rounded-sm"
-          onClick={() => setShowPassword(!showPassword)}
-          type="button"
-          variant="ghost"
-        >
-          {showPassword ? (
-            <EyeOff className="size-4" />
-          ) : (
-            <Eye className="size-4" />
-          )}
-        </InputGroupButton>
-      </InputGroup>
-    </Label>
-  );
-
-  const renderConfirmPasswordField = () => (
-    <Label
-      className="flex flex-col items-start gap-2 p-1"
-      htmlFor="confirm-password"
-    >
-      <span className="text-muted-foreground text-sm">
-        Confirm your password
-      </span>
-      <InputGroup>
-        <InputGroupInput
-          autoComplete="new-password"
-          autoFocus
-          disabled={loading}
-          id="confirm-password"
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          onKeyDown={handleKeyboardNavigation}
-          placeholder="Confirm password"
-          ref={setInputRef}
-          required
-          type={showConfirmPassword ? "text" : "password"}
-          value={confirmPassword}
-        />
-        <InputGroupButton
-          aria-label={showConfirmPassword ? "Hide password" : "Show password"}
-          className="h-9.5 w-9.5 rounded-sm"
-          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-          type="button"
-          variant="ghost"
-        >
-          {showConfirmPassword ? (
-            <EyeOff className="size-4" />
-          ) : (
-            <Eye className="size-4" />
-          )}
-        </InputGroupButton>
-      </InputGroup>
-    </Label>
+  const renderPasswordFields = () => (
+    <div className="flex flex-col gap-1">
+      <Label className="flex flex-col items-start gap-2 p-1" htmlFor="password">
+        <span className="text-muted-foreground text-sm">
+          Enter your password
+        </span>
+        <InputGroup>
+          <InputGroupInput
+            autoComplete="new-password"
+            autoFocus
+            disabled={loading}
+            id="password"
+            minLength={8}
+            onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={handleKeyboardNavigation}
+            placeholder="Password"
+            ref={setInputRef}
+            required
+            type={showPassword ? "text" : "password"}
+            value={password}
+          />
+          <InputGroupButton
+            aria-label={showPassword ? "Hide password" : "Show password"}
+            className="h-9.5 w-9.5 rounded-sm"
+            onClick={() => setShowPassword(!showPassword)}
+            type="button"
+            variant="ghost"
+          >
+            {showPassword ? (
+              <EyeOff className="size-4" />
+            ) : (
+              <Eye className="size-4" />
+            )}
+          </InputGroupButton>
+        </InputGroup>
+      </Label>
+      <Label
+        className="flex flex-col items-start gap-2 p-1"
+        htmlFor="confirm-password"
+      >
+        <span className="text-muted-foreground text-sm">
+          Confirm your password
+        </span>
+        <InputGroup>
+          <InputGroupInput
+            autoComplete="new-password"
+            disabled={loading}
+            id="confirm-password"
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            onKeyDown={handleKeyboardNavigation}
+            placeholder="Confirm password"
+            required
+            type={showConfirmPassword ? "text" : "password"}
+            value={confirmPassword}
+          />
+          <InputGroupButton
+            aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+            className="h-9.5 w-9.5 rounded-sm"
+            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            type="button"
+            variant="ghost"
+          >
+            {showConfirmPassword ? (
+              <EyeOff className="size-4" />
+            ) : (
+              <Eye className="size-4" />
+            )}
+          </InputGroupButton>
+        </InputGroup>
+      </Label>
+    </div>
   );
 
   const renderCurrentField = () => {
@@ -689,10 +691,7 @@ export function SignupCard() {
       return renderEmailField();
     }
     if (currentStep === 2) {
-      return renderPasswordField();
-    }
-    if (currentStep === 3) {
-      return renderConfirmPasswordField();
+      return renderPasswordFields();
     }
     return null;
   };
@@ -738,8 +737,7 @@ export function SignupCard() {
                 googleLoading ||
                 (currentStep === 0 && !name) ||
                 (currentStep === 1 && !email) ||
-                (currentStep === 2 && !password) ||
-                (currentStep === 3 && !confirmPassword)
+                (currentStep === 2 && !(password && confirmPassword))
               }
               type="submit"
             >
