@@ -635,6 +635,7 @@ export function SignupCard() {
             aria-label={showPassword ? "Hide password" : "Show password"}
             className="h-9.5 w-9.5 rounded-sm"
             onClick={() => setShowPassword(!showPassword)}
+            tabIndex={-1}
             type="button"
             variant="ghost"
           >
@@ -669,6 +670,7 @@ export function SignupCard() {
             aria-label={showConfirmPassword ? "Hide password" : "Show password"}
             className="h-9.5 w-9.5 rounded-sm"
             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            tabIndex={-1}
             type="button"
             variant="ghost"
           >
