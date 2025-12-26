@@ -3,160 +3,333 @@
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import type React from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import {
   InputGroup,
   InputGroupButton,
   InputGroupInput,
 } from "@/components/ui/input-group";
-import { Label } from "@/components/ui/label";
-import { signIn } from "@/lib/auth-client";
+import { authClient, signIn } from "@/lib/auth-client";
+import { Checkbox } from "../ui/checkbox";
+import { Label } from "../ui/label";
 import { Spinner } from "../ui/spinner";
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function getLoginButtonText(
+  loading: boolean,
+  showPasswordField: boolean
+): React.ReactNode {
+  if (loading) {
+    return <Spinner />;
+  }
+  if (showPasswordField) {
+    return "Sign in";
+  }
+  return "Continue";
+}
+
+function GoogleButton({
+  loading,
+  googleLoading,
+  onClick,
+  variant,
+}: {
+  loading: boolean;
+  googleLoading: boolean;
+  onClick: () => void;
+  variant: "default" | "outline";
+}) {
+  return (
+    <div className="p-1">
+      <Button
+        aria-label={
+          googleLoading
+            ? "Signing in with Google, please wait"
+            : "Sign in with Google"
+        }
+        className="w-full"
+        disabled={loading || googleLoading}
+        onClick={onClick}
+        type="button"
+        variant={variant}
+      >
+        {googleLoading ? <Spinner /> : "Login with Google"}
+      </Button>
+    </div>
+  );
+}
+
+function PasswordFieldSection({
+  showPassword,
+  password,
+  rememberMe,
+  loading,
+  onPasswordChange,
+  onPasswordKeyDown,
+  onShowPasswordToggle,
+  onRememberMeChange,
+}: {
+  showPassword: boolean;
+  password: string;
+  rememberMe: boolean;
+  loading: boolean;
+  onPasswordChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onPasswordKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  onShowPasswordToggle: () => void;
+  onRememberMeChange: (checked: boolean) => void;
+}) {
+  return (
+    <>
+      <Label className="flex flex-col items-start gap-2 p-1" htmlFor="password">
+        <span className="text-muted-foreground text-sm">
+          Enter your password
+        </span>
+        <InputGroup className="animate-password-entry">
+          <InputGroupInput
+            autoComplete="current-password"
+            disabled={loading}
+            id="password"
+            onChange={onPasswordChange}
+            onKeyDown={onPasswordKeyDown}
+            placeholder="Password"
+            required
+            type={showPassword ? "text" : "password"}
+            value={password}
+          />
+          <InputGroupButton
+            aria-label={showPassword ? "Hide password" : "Show password"}
+            className="h-9.5 w-9.5 rounded-sm"
+            onClick={onShowPasswordToggle}
+            type="button"
+            variant="ghost"
+          >
+            {showPassword ? (
+              <EyeOff className="size-4" />
+            ) : (
+              <Eye className="size-4" />
+            )}
+          </InputGroupButton>
+        </InputGroup>
+      </Label>
+      <div className="flex items-center justify-between px-1 py-2">
+        <Label
+          className="flex cursor-pointer items-center gap-2"
+          htmlFor="remember-me"
+        >
+          <Checkbox
+            checked={rememberMe}
+            disabled={loading}
+            id="remember-me"
+            onCheckedChange={(checked) => onRememberMeChange(checked === true)}
+          />
+          <span className="text-muted-foreground text-sm">Remember me</span>
+        </Label>
+        <Link
+          className="text-muted-foreground text-sm hover:underline"
+          href="/forgot-password"
+        >
+          Forgot password?
+        </Link>
+      </div>
+    </>
+  );
+}
 
 export function LoginCard() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordField, setShowPasswordField] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  const lastMethod = authClient.getLastUsedLoginMethod();
+  let methodDisplayName: string | null = null;
+  if (lastMethod === "google") {
+    methodDisplayName = "Google";
+  } else if (lastMethod === "email") {
+    methodDisplayName = "Email";
+  }
+  const showGoogleFirst = lastMethod === "google";
+
+  useEffect(() => {
+    if (showPasswordField) {
+      const timer = setTimeout(() => {
+        document.getElementById("password")?.focus();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [showPasswordField]);
+
+  const validateEmail = (email: string) => EMAIL_REGEX.test(email);
+
+  const handlePasswordKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const shouldGoBack =
+      e.key === "Escape" ||
+      e.key === "ArrowUp" ||
+      (e.key === "ArrowLeft" &&
+        (e.currentTarget.selectionStart === 0 || !e.currentTarget.value));
+    if (shouldGoBack) {
+      e.preventDefault();
+      setTimeout(() => {
+        document.getElementById("email")?.focus();
+      }, 50);
+    }
+  };
+
+  const handleEmailContinue = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) {
+      toast.error("Please enter your email address");
+      return;
+    }
+    if (!validateEmail(email)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+    setShowPasswordField(true);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
     setLoading(true);
 
-    const { error } = await signIn.email({
-      email,
-      password,
-    });
+    try {
+      const { error } = await signIn.email({
+        email,
+        password,
+      });
 
-    if (error) {
-      setError(error.message || "Something went wrong");
+      if (error) {
+        toast.error(error.message || "Something went wrong. Please try again.");
+        setLoading(false);
+        return;
+      }
+      router.push("/");
+      router.refresh();
+    } catch (err) {
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : "Network error. Please check your connection and try again."
+      );
       setLoading(false);
-      return;
     }
-
-    router.push("/");
-    router.refresh();
   };
 
   const handleGoogleSignIn = async () => {
-    setError("");
-    setLoading(true);
-    await signIn.social({ provider: "google" });
+    setGoogleLoading(true);
+    try {
+      const { error } = await signIn.social({ provider: "google" });
+      if (error) {
+        toast.error(
+          error.message || "Failed to sign in with Google. Please try again."
+        );
+        setGoogleLoading(false);
+      }
+    } catch (err) {
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : "Network error. Please check your connection and try again."
+      );
+      setGoogleLoading(false);
+    }
   };
 
   return (
-    <Card className="w-full max-w-sm">
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl">Welcome back</CardTitle>
-        <CardDescription>Sign in to your account</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <Button
-            className="w-full"
-            disabled={loading}
-            onClick={handleGoogleSignIn}
-            type="button"
-            variant="outline"
-          >
-            Continue with Google
-          </Button>
+    <div className="flex w-full max-w-xs flex-col gap-8 bg-transparent">
+      <div>
+        <h1 className="text-center font-medium text-xl">Login to Staxk</h1>
+      </div>
 
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">
-                Or continue with
-              </span>
-            </div>
+      <div className="flex flex-col gap-2">
+        {showGoogleFirst && (
+          <GoogleButton
+            googleLoading={googleLoading}
+            loading={loading}
+            onClick={handleGoogleSignIn}
+            variant="default"
+          />
+        )}
+
+        {methodDisplayName && (
+          <p className="text-center text-muted-foreground text-sm">
+            You last used {methodDisplayName} to login
+          </p>
+        )}
+
+        <form
+          aria-busy={loading}
+          className={`flex flex-col ${showPasswordField ? "gap-2" : "gap-0.5"}`}
+          onSubmit={showPasswordField ? handleSubmit : handleEmailContinue}
+        >
+          <Label
+            className="flex flex-col items-start gap-2 p-1"
+            htmlFor="email"
+          >
+            <span className="text-muted-foreground text-sm">
+              Enter your email
+            </span>
+            <Input
+              autoComplete="email"
+              disabled={loading || googleLoading}
+              id="email"
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              required
+              type="email"
+              value={email}
+            />
+          </Label>
+
+          <div
+            className={`password-field-wrapper ${showPasswordField ? "expanded" : ""}`}
+          >
+            {showPasswordField && (
+              <PasswordFieldSection
+                loading={loading}
+                onPasswordChange={(e) => setPassword(e.target.value)}
+                onPasswordKeyDown={handlePasswordKeyDown}
+                onRememberMeChange={(checked) => setRememberMe(checked)}
+                onShowPasswordToggle={() => setShowPassword(!showPassword)}
+                password={password}
+                rememberMe={rememberMe}
+                showPassword={showPassword}
+              />
+            )}
           </div>
 
-          <form className="space-y-4" onSubmit={handleSubmit}>
-            {error && (
-              <div className="rounded-md border border-destructive/20 bg-destructive/10 p-3 text-destructive text-sm">
-                {error}
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                autoComplete="email"
-                disabled={loading}
-                id="email"
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                required
-                type="email"
-                value={email}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <InputGroup>
-                <InputGroupInput
-                  autoComplete="current-password"
-                  className="h-11"
-                  disabled={loading}
-                  id="password"
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  required
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                />
-                <InputGroupButton
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                  className="h-9.5 w-9 rounded-sm"
-                  onClick={() => setShowPassword(!showPassword)}
-                  type="button"
-                  variant="ghost"
-                >
-                  {showPassword ? (
-                    <EyeOff className="size-4" />
-                  ) : (
-                    <Eye className="size-4" />
-                  )}
-                </InputGroupButton>
-              </InputGroup>
-            </div>
-
-            <Label className="cursor-pointer" htmlFor="remember-me">
-              <Checkbox
-                checked={rememberMe}
-                disabled={loading}
-                id="remember-me"
-                onCheckedChange={(checked) => setRememberMe(checked === true)}
-              />
-              Remember me
-            </Label>
-
-            <Button className="w-full" disabled={loading} type="submit">
-              {loading ? <Spinner /> : "Sign in"}
+          <div className="p-1">
+            <Button
+              className="w-full"
+              disabled={
+                loading || googleLoading || !(showPasswordField || email)
+              }
+              type="submit"
+            >
+              {getLoginButtonText(loading, showPasswordField)}
             </Button>
-          </form>
-        </div>
-      </CardContent>
-      <CardFooter className="justify-center">
-        <p className="text-muted-foreground text-sm">
+          </div>
+        </form>
+
+        {!showGoogleFirst && (
+          <GoogleButton
+            googleLoading={googleLoading}
+            loading={loading}
+            onClick={handleGoogleSignIn}
+            variant="outline"
+          />
+        )}
+
+        <p className="text-center text-muted-foreground text-sm">
           Don&apos;t have an account?{" "}
           <Link
             className="font-medium text-foreground hover:underline"
@@ -165,7 +338,7 @@ export function LoginCard() {
             Sign up
           </Link>
         </p>
-      </CardFooter>
-    </Card>
+      </div>
+    </div>
   );
 }
