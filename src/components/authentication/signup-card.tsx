@@ -76,7 +76,6 @@ export function SignupCard() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
@@ -362,6 +361,10 @@ export function SignupCard() {
     }
   };
 
+  const handleShowPasswordClick = () => {
+    setShowPassword((prev) => !prev);
+  };
+
   const renderNameField = () => (
     <Label className="flex flex-col items-start gap-2 p-1" htmlFor="name">
       <span className="text-muted-foreground text-sm">
@@ -426,7 +429,7 @@ export function SignupCard() {
           <InputGroupButton
             aria-label={showPassword ? "Hide password" : "Show password"}
             className="h-9.5 w-9.5 rounded-sm"
-            onClick={() => setShowPassword(!showPassword)}
+            onClick={handleShowPasswordClick}
             tabIndex={-1}
             type="button"
             variant="ghost"
@@ -455,18 +458,18 @@ export function SignupCard() {
             onKeyDown={handleKeyboardNavigation}
             placeholder="Confirm password"
             required
-            type={showConfirmPassword ? "text" : "password"}
+            type={showPassword ? "text" : "password"}
             value={confirmPassword}
           />
           <InputGroupButton
-            aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+            aria-label={showPassword ? "Hide password" : "Show password"}
             className="h-9.5 w-9.5 rounded-sm"
-            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            onClick={handleShowPasswordClick}
             tabIndex={-1}
             type="button"
             variant="ghost"
           >
-            {showConfirmPassword ? (
+            {showPassword ? (
               <EyeOff className="size-4" />
             ) : (
               <Eye className="size-4" />
