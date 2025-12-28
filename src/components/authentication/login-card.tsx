@@ -206,6 +206,27 @@ export function LoginCard() {
     setShowPasswordField(true);
   };
 
+  const showErrorToast = (err: unknown) => {
+    if (err instanceof Error) {
+      if (err.message.includes("429")) {
+        toast.error("Too many requests. Please try again later.");
+        return;
+      }
+      if (
+        err.message.includes("ERR_RESPONSE_HEADERS_TOO_BIG") ||
+        err.message.includes("headers too big")
+      ) {
+        toast.error(
+          "Authentication error. Please clear your browser cookies and try again."
+        );
+        return;
+      }
+      toast.error(err.message);
+      return;
+    }
+    toast.error("Network error. Please check your connection and try again.");
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -225,23 +246,7 @@ export function LoginCard() {
       router.push("/");
       router.refresh();
     } catch (err) {
-      if (err instanceof Error && err.message.includes("429")) {
-        toast.error("Too many requests. Please try again later.");
-      } else if (
-        err instanceof Error &&
-        (err.message.includes("ERR_RESPONSE_HEADERS_TOO_BIG") ||
-          err.message.includes("headers too big"))
-      ) {
-        toast.error(
-          "Authentication error. Please clear your browser cookies and try again."
-        );
-      } else {
-        toast.error(
-          err instanceof Error
-            ? err.message
-            : "Network error. Please check your connection and try again."
-        );
-      }
+      showErrorToast(err);
       setLoading(false);
     }
   };
