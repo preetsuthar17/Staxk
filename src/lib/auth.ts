@@ -1,8 +1,17 @@
+import { passkey } from "@better-auth/passkey";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { lastLoginMethod, username } from "better-auth/plugins";
+import { lastLoginMethod, twoFactor, username } from "better-auth/plugins";
 import { db } from "@/db";
-import { account, rateLimit, session, user, verification } from "@/db/schema";
+import {
+  account,
+  passkey as passkeyTable,
+  rateLimit,
+  session,
+  twoFactor as twoFactorTable,
+  user,
+  verification,
+} from "@/db/schema";
 
 const USERNAME_STARTS_WITH_LETTER_REGEX = /^[a-z]/i;
 const USERNAME_ALPHANUMERIC_UNDERSCORE_REGEX = /^[a-z0-9_]+$/;
@@ -10,6 +19,7 @@ const USERNAME_ALPHANUMERIC_UNDERSCORE_REGEX = /^[a-z0-9_]+$/;
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
   basePath: "/api/auth",
+  appName: "Staxk",
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: {
@@ -18,6 +28,8 @@ export const auth = betterAuth({
       account,
       verification,
       rateLimit,
+      twoFactor: twoFactorTable,
+      passkey: passkeyTable,
     },
   }),
   session: {
@@ -35,23 +47,33 @@ export const auth = betterAuth({
   },
   plugins: [
     lastLoginMethod(),
+    passkey({
+      rpName: "Staxk",
+      rpID:
+        process.env.NODE_ENV === "production"
+          ? new URL(process.env.BETTER_AUTH_URL || "").hostname
+          : "localhost",
+      origin:
+        process.env.NODE_ENV === "production"
+          ? process.env.BETTER_AUTH_URL || ""
+          : "http://localhost:3000",
+    }),
+    twoFactor({
+      issuer: "Staxk",
+    }),
     username({
       minUsernameLength: 3,
       maxUsernameLength: 30,
       usernameValidator: (usernameValue) => {
-        // Must start with a letter
         if (!USERNAME_STARTS_WITH_LETTER_REGEX.test(usernameValue)) {
           return false;
         }
-        // Only lowercase letters, numbers, and underscores
         if (!USERNAME_ALPHANUMERIC_UNDERSCORE_REGEX.test(usernameValue)) {
           return false;
         }
-        // Cannot end with underscore
         if (usernameValue.endsWith("_")) {
           return false;
         }
-        // Cannot have consecutive underscores
         if (usernameValue.includes("__")) {
           return false;
         }

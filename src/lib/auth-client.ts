@@ -1,5 +1,7 @@
+import { passkeyClient } from "@better-auth/passkey/client";
 import {
   lastLoginMethodClient,
+  twoFactorClient,
   usernameClient,
 } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
@@ -10,7 +12,16 @@ export const authClient = createAuthClient({
     typeof window !== "undefined"
       ? window.location.origin
       : process.env.NEXT_PUBLIC_BETTER_AUTH_URL || "http://localhost:3000",
-  plugins: [lastLoginMethodClient(), usernameClient()],
+  plugins: [
+    lastLoginMethodClient(),
+    passkeyClient(),
+    twoFactorClient({
+      onTwoFactorRedirect() {
+        window.location.href = "/login?verify=2fa";
+      },
+    }),
+    usernameClient(),
+  ],
   fetchOptions: {
     onError: (context) => {
       const { response, error } = context;

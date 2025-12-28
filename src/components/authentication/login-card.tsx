@@ -1,6 +1,6 @@
 "use client";
 
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Fingerprint } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -64,7 +64,7 @@ function GoogleButton({
           <Spinner />
         ) : (
           <span className="flex items-center gap-3 font-medium">
-            <GoogleLogo className="size-4" /> Login with Google
+            <GoogleLogo className="size-4" /> Sign in with Google
           </span>
         )}
       </Button>
@@ -149,6 +149,159 @@ function PasswordFieldSection({
   );
 }
 
+function PasskeyButton({
+  loading,
+  passkeyLoading,
+  onClick,
+  variant = "outline",
+}: {
+  loading: boolean;
+  passkeyLoading: boolean;
+  onClick: () => void;
+  variant?: "default" | "outline";
+}) {
+  return (
+    <div className="p-1">
+      <Button
+        className="w-full"
+        disabled={loading || passkeyLoading}
+        onClick={onClick}
+        type="button"
+        variant={variant}
+      >
+        {passkeyLoading ? (
+          <Spinner />
+        ) : (
+          <span className="flex items-center gap-3 font-medium">
+            <Fingerprint className="size-4" />
+            Sign in with passkey
+          </span>
+        )}
+      </Button>
+    </div>
+  );
+}
+
+function LastUsedMethodMessage({
+  methodDisplayName,
+}: {
+  methodDisplayName: string | null;
+}) {
+  if (!methodDisplayName) {
+    return null;
+  }
+  return (
+    <p className="pb-4 text-center font-medium text-muted-foreground text-sm">
+      You last used {methodDisplayName} to login
+    </p>
+  );
+}
+
+function getMethodDisplayName(method: string | null): string | null {
+  if (method === "google") {
+    return "Google";
+  }
+  if (method === "email") {
+    return "Email";
+  }
+  if (method === "passkey") {
+    return "Passkey";
+  }
+  return null;
+}
+
+function getErrorMessage(err: unknown): string {
+  if (err instanceof Error) {
+    if (err.message.includes("429")) {
+      return "Too many requests. Please try again later.";
+    }
+    if (
+      err.message.includes("ERR_RESPONSE_HEADERS_TOO_BIG") ||
+      err.message.includes("headers too big")
+    ) {
+      return "Authentication error. Please clear your browser cookies and try again.";
+    }
+    return err.message;
+  }
+  return "Network error. Please check your connection and try again.";
+}
+
+function showErrorToast(err: unknown) {
+  toast.error(getErrorMessage(err));
+}
+
+function handleEmailSignInSuccess(
+  data: unknown,
+  router: ReturnType<typeof useRouter>
+) {
+  if (data && typeof data === "object" && "twoFactorRedirect" in data) {
+    const redirectData = data as { twoFactorRedirect?: boolean };
+    if (redirectData.twoFactorRedirect) {
+      router.push("/login?verify=2fa");
+      return;
+    }
+  }
+  router.push("/");
+  router.refresh();
+}
+
+async function performEmailSignIn(
+  email: string,
+  password: string,
+  rememberMe: boolean
+) {
+  const { data, error } = await signIn.email({
+    email,
+    password,
+    rememberMe,
+  });
+
+  if (error) {
+    toast.error(error.message || "Something went wrong. Please try again.");
+    return { success: false };
+  }
+
+  return { success: true, data };
+}
+
+function handleGoogleSignInError(err: unknown) {
+  const message =
+    err instanceof Error
+      ? err.message
+      : "Network error. Please check your connection and try again.";
+  toast.error(message);
+}
+
+async function performGoogleSignIn() {
+  const { error } = await signIn.social({ provider: "google" });
+  if (error) {
+    toast.error(
+      error.message || "Failed to sign in with Google. Please try again."
+    );
+    return { success: false };
+  }
+  return { success: true };
+}
+
+function handlePasskeySignInError(err: unknown) {
+  const message =
+    err instanceof Error
+      ? err.message
+      : "Failed to sign in with passkey. Please try again.";
+  toast.error(message);
+}
+
+async function performPasskeySignIn() {
+  const { error } = await authClient.signIn.passkey();
+  if (error) {
+    toast.error(
+      error.message || "Failed to sign in with passkey. Please try again."
+    );
+    return { success: false };
+  }
+  return { success: true };
+}
+
 export function LoginCard() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -158,15 +311,28 @@ export function LoginCard() {
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [passkeyLoading, setPasskeyLoading] = useState(false);
+  const [passkeySupported, setPasskeySupported] = useState(false);
 
   const lastMethod = authClient.getLastUsedLoginMethod();
-  let methodDisplayName: string | null = null;
-  if (lastMethod === "google") {
-    methodDisplayName = "Google";
-  } else if (lastMethod === "email") {
-    methodDisplayName = "Email";
-  }
+  const methodDisplayName = getMethodDisplayName(lastMethod);
   const showGoogleFirst = lastMethod === "google";
+  const showPasskeyFirst = lastMethod === "passkey";
+
+  useEffect(() => {
+    const checkPasskeySupport = async () => {
+      if (
+        typeof window !== "undefined" &&
+        window.PublicKeyCredential &&
+        PublicKeyCredential.isConditionalMediationAvailable
+      ) {
+        const available =
+          await PublicKeyCredential.isConditionalMediationAvailable();
+        setPasskeySupported(available);
+      }
+    };
+    checkPasskeySupport();
+  }, []);
 
   useEffect(() => {
     if (showPasswordField) {
@@ -206,45 +372,17 @@ export function LoginCard() {
     setShowPasswordField(true);
   };
 
-  const showErrorToast = (err: unknown) => {
-    if (err instanceof Error) {
-      if (err.message.includes("429")) {
-        toast.error("Too many requests. Please try again later.");
-        return;
-      }
-      if (
-        err.message.includes("ERR_RESPONSE_HEADERS_TOO_BIG") ||
-        err.message.includes("headers too big")
-      ) {
-        toast.error(
-          "Authentication error. Please clear your browser cookies and try again."
-        );
-        return;
-      }
-      toast.error(err.message);
-      return;
-    }
-    toast.error("Network error. Please check your connection and try again.");
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const { error } = await signIn.email({
-        email,
-        password,
-        rememberMe,
-      });
-
-      if (error) {
-        toast.error(error.message || "Something went wrong. Please try again.");
+      const result = await performEmailSignIn(email, password, rememberMe);
+      if (result.success && result.data) {
+        handleEmailSignInSuccess(result.data, router);
+      } else {
         setLoading(false);
-        return;
       }
-      router.push("/");
-      router.refresh();
     } catch (err) {
       showErrorToast(err);
       setLoading(false);
@@ -254,20 +392,27 @@ export function LoginCard() {
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
     try {
-      const { error } = await signIn.social({ provider: "google" });
-      if (error) {
-        toast.error(
-          error.message || "Failed to sign in with Google. Please try again."
-        );
-        setGoogleLoading(false);
+      await performGoogleSignIn();
+    } catch (err) {
+      handleGoogleSignInError(err);
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
+  const handlePasskeySignIn = async () => {
+    setPasskeyLoading(true);
+    try {
+      const result = await performPasskeySignIn();
+      if (result.success) {
+        router.push("/");
+        router.refresh();
+      } else {
+        setPasskeyLoading(false);
       }
     } catch (err) {
-      toast.error(
-        err instanceof Error
-          ? err.message
-          : "Network error. Please check your connection and try again."
-      );
-      setGoogleLoading(false);
+      handlePasskeySignInError(err);
+      setPasskeyLoading(false);
     }
   };
 
@@ -279,20 +424,30 @@ export function LoginCard() {
       </div>
 
       <div className="flex flex-col gap-2">
-        {/* First login method */}
-        {showGoogleFirst && (
-          <GoogleButton
-            googleLoading={googleLoading}
-            loading={loading}
-            onClick={handleGoogleSignIn}
-            variant="default"
-          />
+        {/* Passkey first if last used */}
+        {showPasskeyFirst && passkeySupported && (
+          <>
+            <PasskeyButton
+              loading={loading || googleLoading}
+              onClick={handlePasskeySignIn}
+              passkeyLoading={passkeyLoading}
+              variant="default"
+            />
+            <LastUsedMethodMessage methodDisplayName={methodDisplayName} />
+          </>
         )}
 
-        {showGoogleFirst && methodDisplayName && (
-          <p className="pb-4 text-center font-medium text-muted-foreground text-sm">
-            You last used {methodDisplayName} to login
-          </p>
+        {/* Google first if last used */}
+        {showGoogleFirst && (
+          <>
+            <GoogleButton
+              googleLoading={googleLoading}
+              loading={loading}
+              onClick={handleGoogleSignIn}
+              variant="default"
+            />
+            <LastUsedMethodMessage methodDisplayName={methodDisplayName} />
+          </>
         )}
 
         <form
@@ -350,18 +505,24 @@ export function LoginCard() {
           </div>
         </form>
 
-        {!showGoogleFirst && methodDisplayName && (
-          <p className="pb-4 text-center font-medium text-muted-foreground text-sm">
-            You last used {methodDisplayName} to login
-          </p>
+        {!(showGoogleFirst || showPasskeyFirst) && (
+          <LastUsedMethodMessage methodDisplayName={methodDisplayName} />
         )}
 
-        {/* Second login method */}
         {!showGoogleFirst && (
           <GoogleButton
             googleLoading={googleLoading}
             loading={loading}
             onClick={handleGoogleSignIn}
+            variant="outline"
+          />
+        )}
+
+        {passkeySupported && !showPasskeyFirst && (
+          <PasskeyButton
+            loading={loading || googleLoading}
+            onClick={handlePasskeySignIn}
+            passkeyLoading={passkeyLoading}
             variant="outline"
           />
         )}

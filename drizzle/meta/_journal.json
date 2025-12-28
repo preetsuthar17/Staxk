@@ -29,6 +29,20 @@
       "when": 1766936634470,
       "tag": "0003_sad_cannonball",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1766939715522,
+      "tag": "0004_real_red_skull",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1766940597016,
+      "tag": "0005_absent_rogue",
+      "breakpoints": true
     }
   ]
 }
