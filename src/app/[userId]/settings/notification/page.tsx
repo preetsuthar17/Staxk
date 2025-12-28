@@ -1,4 +1,4 @@
-import { NotificationSettings } from "@/components/settings/user-settings/notification-settings";
+import { NotificationSettings } from "@/components/settings/user-settings/notification-settings/notification-settings";
 import { SettingsSidebar } from "@/components/settings/user-settings/settings-sidebar";
 import { requireSessionForUser } from "@/lib/auth-utils";
 
