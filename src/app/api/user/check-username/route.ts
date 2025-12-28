@@ -1,17 +1,14 @@
 import { and, eq, ne } from "drizzle-orm";
-import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { user } from "@/db/schema";
-import { auth } from "@/lib/auth";
+import { getSessionSafe } from "@/lib/auth-utils";
 import { validateUsernameFormat } from "@/lib/username";
 import { usernameCache } from "@/lib/username-cache";
 
 export async function POST(request: Request) {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSessionSafe();
 
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

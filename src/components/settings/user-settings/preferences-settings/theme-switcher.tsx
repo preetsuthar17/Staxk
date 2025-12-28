@@ -49,20 +49,23 @@ export function ThemeSwitcher() {
             const isActive = theme === value;
             return (
               <Tooltip key={value}>
-                <TooltipTrigger>
-                  <Button
-                    aria-label={`Switch to ${label.toLowerCase()} theme`}
-                    aria-pressed={isActive}
-                    className="flex flex-col items-center justify-center"
-                    id={`theme-${value}`}
-                    onClick={() => setTheme(value)}
-                    size={"icon"}
-                    type="button"
-                    variant={isActive ? "default" : "outline"}
-                  >
-                    <Icon className="size-4" />
-                  </Button>
-                </TooltipTrigger>
+                <TooltipTrigger
+                  render={(props) => (
+                    <Button
+                      {...props}
+                      aria-label={`Switch to ${label.toLowerCase()} theme`}
+                      aria-pressed={isActive}
+                      className="flex flex-col items-center justify-center"
+                      id={`theme-${value}`}
+                      onClick={() => setTheme(value)}
+                      size={"icon"}
+                      type="button"
+                      variant={isActive ? "default" : "outline"}
+                    >
+                      <Icon className="size-4" />
+                    </Button>
+                  )}
+                />
                 <TooltipContent align="center" side="top">
                   {label}
                 </TooltipContent>

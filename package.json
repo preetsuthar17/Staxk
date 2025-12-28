@@ -11,7 +11,8 @@
     "drizzle:generate": "pnpm exec drizzle-kit generate",
     "drizzle:push": "pnpm exec drizzle-kit push",
     "drizzle:migrate": "pnpm exec drizzle-kit migrate",
-    "drizzle:studio": "pnpm exec drizzle-kit studio"
+    "drizzle:studio": "pnpm exec drizzle-kit studio",
+    "db:check": "tsx scripts/check-db.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.0.0",

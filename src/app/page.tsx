@@ -1,5 +1,3 @@
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
 import { DashboardSidebar } from "@/components/dashboard/sidebar/sidebar";
 import {
   Card,
@@ -8,16 +6,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { auth } from "@/lib/auth";
+import { requireSession } from "@/lib/auth-utils";
 
 export default async function DashboardPage() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session) {
-    redirect("/home");
-  }
+  const session = await requireSession();
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">

@@ -1,8 +1,6 @@
-import { headers } from "next/headers";
-import { notFound, redirect } from "next/navigation";
 import { PreferencesSettings } from "@/components/settings/user-settings/preferences-settings/preferences-settings";
 import { SettingsSidebar } from "@/components/settings/user-settings/settings-sidebar";
-import { auth } from "@/lib/auth";
+import { requireSessionForUser } from "@/lib/auth-utils";
 
 interface PreferencesPageProps {
   params: Promise<{ userId: string }>;
@@ -12,17 +10,7 @@ export default async function PreferencesPage({
   params,
 }: PreferencesPageProps) {
   const { userId } = await params;
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session) {
-    redirect("/home");
-  }
-
-  if (session.user.id !== userId) {
-    notFound();
-  }
+  await requireSessionForUser(userId);
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">

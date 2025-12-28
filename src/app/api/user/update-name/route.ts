@@ -1,17 +1,14 @@
 import { eq } from "drizzle-orm";
-import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { user } from "@/db/schema";
-import { auth } from "@/lib/auth";
+import { getSessionSafe } from "@/lib/auth-utils";
 
 const MAX_NAME_LENGTH = 100;
 
 export async function PATCH(request: Request) {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSessionSafe();
 
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

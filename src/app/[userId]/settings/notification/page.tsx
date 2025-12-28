@@ -1,8 +1,6 @@
-import { headers } from "next/headers";
-import { notFound, redirect } from "next/navigation";
 import { NotificationSettings } from "@/components/settings/user-settings/notification-settings";
 import { SettingsSidebar } from "@/components/settings/user-settings/settings-sidebar";
-import { auth } from "@/lib/auth";
+import { requireSessionForUser } from "@/lib/auth-utils";
 
 interface NotificationPageProps {
   params: Promise<{ userId: string }>;
@@ -12,17 +10,7 @@ export default async function NotificationPage({
   params,
 }: NotificationPageProps) {
   const { userId } = await params;
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session) {
-    redirect("/home");
-  }
-
-  if (session.user.id !== userId) {
-    notFound();
-  }
+  await requireSessionForUser(userId);
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
