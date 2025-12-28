@@ -261,25 +261,33 @@ export function SignupCard() {
     }
   };
 
-  const generateUsernameForUser = async () => {
-    try {
-      const usernameResponse = await fetch("/api/user/generate-username", {
-        method: "POST",
-      });
+  const generateUsernameFromName = (nameValue: string): string => {
+    // Convert to lowercase and replace spaces with underscores
+    const normalized = nameValue
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, "_")
+      .replace(/[^a-z0-9_]/g, "")
+      .replace(/_+/g, "_")
+      .replace(/^_|_$/g, "");
 
-      if (!usernameResponse.ok) {
-        console.error("Failed to generate username, but signup was successful");
-      }
-    } catch (usernameError) {
-      console.error("Error generating username:", usernameError);
-    }
+    // Generate 6 random digits
+    const randomDigits = Math.floor(
+      100_000 + Math.random() * 900_000
+    ).toString();
+
+    return `${normalized}_${randomDigits}`;
   };
 
   const performEmailSignup = async () => {
+    // Generate a username from the user's name
+    const generatedUsername = generateUsernameFromName(name);
+
     const { error } = await signUp.email({
       name,
       email,
       password,
+      username: generatedUsername,
     });
 
     if (error) {
@@ -311,8 +319,6 @@ export function SignupCard() {
         return;
       }
 
-      await generateUsernameForUser();
-
       router.push("/");
       router.refresh();
     } catch (err) {
@@ -334,23 +340,8 @@ export function SignupCard() {
           error.message || "Failed to sign in with Google. Please try again."
         );
         setGoogleLoading(false);
-        return;
       }
-
-      try {
-        const usernameResponse = await fetch("/api/user/generate-username", {
-          method: "POST",
-        });
-
-        if (!usernameResponse.ok) {
-          console.error("Failed to generate username for Google OAuth user");
-        }
-      } catch (usernameError) {
-        console.error(
-          "Error generating username for Google OAuth user:",
-          usernameError
-        );
-      }
+      // OAuth users can set their username later in profile settings
     } catch (err) {
       toast.error(
         err instanceof Error

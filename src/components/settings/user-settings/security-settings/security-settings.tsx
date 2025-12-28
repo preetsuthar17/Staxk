@@ -2,6 +2,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { ChangePassword } from "./change-password";
+import { SessionList } from "./session-list";
 
 export function SecuritySettings() {
   return (
@@ -12,6 +13,11 @@ export function SecuritySettings() {
       <Card className="p-6 sm:p-6">
         <CardContent className="flex flex-col gap-6">
           <ChangePassword />
+        </CardContent>
+      </Card>
+      <Card className="p-6 sm:p-6">
+        <CardContent className="flex flex-col gap-6">
+          <SessionList />
         </CardContent>
       </Card>
     </div>

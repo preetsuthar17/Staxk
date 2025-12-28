@@ -17,10 +17,53 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useSession } from "@/lib/auth-client";
-import { validateUsernameFormat } from "@/lib/username";
+import { updateUser, useSession } from "@/lib/auth-client";
 import { ProfileAvatar } from "./profile-avatar";
 import { UsernameInput, useUsernameAvailability } from "./username-input";
+
+const USERNAME_STARTS_WITH_LETTER_REGEX = /^[a-z]/i;
+const USERNAME_ALPHANUMERIC_UNDERSCORE_REGEX = /^[a-z0-9_]+$/;
+
+/**
+ * Validates username format
+ */
+function validateUsernameFormat(username: string): {
+  valid: boolean;
+  error?: string;
+} {
+  if (!username || username.length < 3) {
+    return { valid: false, error: "Username must be at least 3 characters" };
+  }
+
+  if (username.length > 30) {
+    return { valid: false, error: "Username must be 30 characters or less" };
+  }
+
+  if (!USERNAME_STARTS_WITH_LETTER_REGEX.test(username)) {
+    return { valid: false, error: "Username must start with a letter" };
+  }
+
+  if (!USERNAME_ALPHANUMERIC_UNDERSCORE_REGEX.test(username)) {
+    return {
+      valid: false,
+      error:
+        "Username can only contain lowercase letters, numbers, and underscores",
+    };
+  }
+
+  if (username.endsWith("_")) {
+    return { valid: false, error: "Username cannot end with an underscore" };
+  }
+
+  if (username.includes("__")) {
+    return {
+      valid: false,
+      error: "Username cannot contain consecutive underscores",
+    };
+  }
+
+  return { valid: true };
+}
 
 const profileSchema = z.object({
   name: z.string().min(1, "Name cannot be empty").trim(),
@@ -245,24 +288,11 @@ export function ProfileSettings() {
     [setValue]
   );
 
-  const initializeFormData = useCallback(async () => {
+  const initializeFormData = useCallback(() => {
     const user = session?.user;
     const sessionName = user?.name || "";
     const sessionUsername = (user as { username?: string })?.username || "";
-
-    try {
-      const response = await fetch("/api/user/get-username");
-      if (response.ok) {
-        const data = await response.json();
-        const dbUsername = data.username || "";
-        setFormValues(dbUsername, sessionName);
-      } else {
-        setFormValues(sessionUsername, sessionName);
-      }
-    } catch {
-      // Fallback to session data if API call fails
-      setFormValues(sessionUsername, sessionName);
-    }
+    setFormValues(sessionUsername, sessionName);
   }, [session?.user, setFormValues]);
 
   useEffect(() => {
@@ -272,20 +302,7 @@ export function ProfileSettings() {
     }
   }, [session?.user, isInitialized, initializeFormData]);
 
-  const updateUsernameFromApi = useCallback(async () => {
-    try {
-      const response = await fetch("/api/user/get-username");
-      if (response.ok) {
-        const data = await response.json();
-        const dbUsername = data.username || "";
-        setUsername(dbUsername);
-        setValue("username", dbUsername, { shouldValidate: false });
-      }
-    } catch {
-      // Silently fail if API call fails
-    }
-  }, [setValue]);
-
+  // Update username from session when it changes
   useEffect(() => {
     if (
       session?.user?.id &&
@@ -293,54 +310,40 @@ export function ProfileSettings() {
       lastFetchedUserIdRef.current !== session.user.id
     ) {
       lastFetchedUserIdRef.current = session.user.id;
-      updateUsernameFromApi();
+      const sessionUsername =
+        (session.user as { username?: string })?.username || "";
+      setUsername(sessionUsername);
+      setValue("username", sessionUsername, { shouldValidate: false });
     }
-  }, [session?.user?.id, isInitialized, updateUsernameFromApi]);
+  }, [session?.user, isInitialized, setValue]);
 
   const updateName = useCallback(async (nameValue: string) => {
-    const nameResponse = await fetch("/api/user/update-name", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: nameValue }),
+    const { error } = await updateUser({
+      name: nameValue,
     });
 
-    const nameData = await nameResponse.json();
-    if (!nameResponse.ok) {
-      throw new Error(nameData.error || "Failed to update name");
+    if (error) {
+      throw new Error(error.message || "Failed to update name");
     }
   }, []);
 
   const updateUsername = useCallback(async (usernameValue: string) => {
-    const usernameResponse = await fetch("/api/user/update-username", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username: usernameValue }),
+    // Use better-auth's updateUser for username updates
+    const { error } = await updateUser({
+      username: usernameValue,
     });
 
-    const usernameData = await usernameResponse.json();
-    if (!usernameResponse.ok) {
-      throw new Error(usernameData.error || "Failed to update username");
+    if (error) {
+      throw new Error(error.message || "Failed to update username");
     }
 
     setUsername(usernameValue);
   }, []);
 
-  const fetchUpdatedUsername = useCallback(async () => {
-    try {
-      const usernameResponse = await fetch("/api/user/get-username");
-      if (usernameResponse.ok) {
-        const usernameData = await usernameResponse.json();
-        const dbUsername = usernameData.username || "";
-        if (dbUsername) {
-          setUsername(dbUsername);
-          setValue("username", dbUsername, { shouldValidate: false });
-          lastFetchedUserIdRef.current = null;
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching updated username:", error);
-    }
-  }, [setValue]);
+  const refreshUsernameFromSession = useCallback(() => {
+    // Invalidate cached user ID to trigger refresh from session
+    lastFetchedUserIdRef.current = null;
+  }, []);
 
   const handleRefetch = useCallback(async () => {
     if (refetch && typeof refetch === "function") {
@@ -381,7 +384,7 @@ export function ProfileSettings() {
         await handleRefetch();
 
         if (usernameChanged) {
-          await fetchUpdatedUsername();
+          refreshUsernameFromSession();
         }
 
         setTimeout(() => {
@@ -395,7 +398,13 @@ export function ProfileSettings() {
         setSaveStatus("error");
       }
     },
-    [router, handleRefetch, updateName, updateUsername, fetchUpdatedUsername]
+    [
+      router,
+      handleRefetch,
+      updateName,
+      updateUsername,
+      refreshUsernameFromSession,
+    ]
   );
 
   const handleNameChange = useCallback(
@@ -482,15 +491,13 @@ export function ProfileSettings() {
 
   const saveUsernameUpdate = useCallback(
     async (trimmedUsername: string) => {
-      const usernameResponse = await fetch("/api/user/update-username", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: trimmedUsername }),
+      // Use better-auth's updateUser for username updates
+      const { error } = await updateUser({
+        username: trimmedUsername,
       });
 
-      const usernameData = await usernameResponse.json();
-      if (!usernameResponse.ok) {
-        throw new Error(usernameData.error || "Failed to update username");
+      if (error) {
+        throw new Error(error.message || "Failed to update username");
       }
 
       setUsername(trimmedUsername);
@@ -500,9 +507,9 @@ export function ProfileSettings() {
       toast.success("Username updated successfully");
       router.refresh();
       await handleRefetch();
-      await fetchUpdatedUsername();
+      refreshUsernameFromSession();
     },
-    [router, setValue, handleRefetch, fetchUpdatedUsername]
+    [router, setValue, handleRefetch, refreshUsernameFromSession]
   );
 
   const handleSaveUsername = async () => {

@@ -135,7 +135,7 @@ function InputGroupInput({
   return (
     <Input
       className={cn(
-        " rounded-none border-0 bg-transparent shadow-none ring-0 focus-visible:ring-0 aria-invalid:ring-0 dark:bg-transparent",
+        "rounded-none border-0 bg-transparent shadow-none ring-0 focus-visible:ring-0 aria-invalid:ring-0 dark:bg-transparent",
         className
       )}
       data-slot="input-group-control"

@@ -2,7 +2,7 @@
 
 import imageCompression from "browser-image-compression";
 import { Camera, User as UserIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { type AppRouterInstance, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -13,14 +13,121 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useSession } from "@/lib/auth-client";
+import { updateUser, useSession } from "@/lib/auth-client";
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024;
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
+const MAX_BASE64_SIZE = 7 * 1024 * 1024; // ~7MB to account for base64 encoding overhead (~33% increase)
 
 interface ProfileAvatarProps {
   name: string;
   onUploadStart?: () => void;
   onUploadComplete?: () => void;
+}
+
+function validateFile(
+  file: File,
+  fileInputRef: React.RefObject<HTMLInputElement>
+): boolean {
+  if (!file.type.startsWith("image/")) {
+    toast.error("Please select a valid image file");
+    return false;
+  }
+
+  if (file.size > MAX_FILE_SIZE) {
+    toast.error(
+      `Image is too large. Maximum size is ${MAX_FILE_SIZE / (1024 * 1024)}MB. Your file is ${(file.size / (1024 * 1024)).toFixed(2)}MB`
+    );
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+    return false;
+  }
+
+  return true;
+}
+
+function resetFileInput(fileInputRef: React.RefObject<HTMLInputElement>) {
+  if (fileInputRef.current) {
+    fileInputRef.current.value = "";
+  }
+}
+
+async function compressImage(file: File): Promise<File> {
+  const options = {
+    maxSizeMB: 0.5,
+    maxWidthOrHeight: 1024,
+    useWebWorker: true,
+    fileType: file.type,
+  };
+
+  const compressedFile = await imageCompression(file, options);
+
+  if (compressedFile.size > MAX_FILE_SIZE) {
+    throw new Error(
+      `Image is too large after compression. Maximum size is ${MAX_FILE_SIZE / (1024 * 1024)}MB`
+    );
+  }
+
+  return compressedFile;
+}
+
+function handleCompressionError(
+  error: unknown,
+  setIsUploadingAvatar: (value: boolean) => void,
+  onUploadComplete?: () => void
+) {
+  console.error("Error compressing image:", error);
+  toast.error("Failed to process image. Please try again.");
+  setIsUploadingAvatar(false);
+  onUploadComplete?.();
+}
+
+async function uploadAvatar(
+  base64String: string,
+  router: AppRouterInstance,
+  refetch?: () => Promise<void>,
+  onUploadComplete?: () => void
+) {
+  const { error } = await updateUser({
+    image: base64String,
+  });
+
+  if (error) {
+    throw new Error(error.message || "Failed to update profile picture");
+  }
+
+  toast.success("Profile picture updated successfully");
+  router.refresh();
+
+  if (refetch && typeof refetch === "function") {
+    try {
+      await refetch();
+    } catch {
+      // Silently fail if refetch fails - session will update on next page load
+    }
+  }
+
+  onUploadComplete?.();
+}
+
+function validateBase64Size(
+  base64String: string,
+  setIsUploadingAvatar: (value: boolean) => void,
+  onUploadComplete?: () => void,
+  fileInputRef?: React.RefObject<HTMLInputElement>
+): boolean {
+  if (base64String.length > MAX_BASE64_SIZE) {
+    toast.error(
+      `Image is too large after compression. Maximum size is ${MAX_FILE_SIZE / (1024 * 1024)}MB`
+    );
+    setIsUploadingAvatar(false);
+    onUploadComplete?.();
+    if (fileInputRef?.current) {
+      fileInputRef.current.value = "";
+    }
+    return false;
+  }
+  return true;
 }
 
 export function ProfileAvatar({
@@ -49,15 +156,7 @@ export function ProfileAvatar({
       return;
     }
 
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please select a valid image file");
-      return;
-    }
-
-    if (file.size > MAX_FILE_SIZE) {
-      toast.error(
-        `Image is too large. Maximum size is ${MAX_FILE_SIZE / (1024 * 1024)}MB`
-      );
+    if (!validateFile(file, fileInputRef)) {
       return;
     }
 
@@ -65,49 +164,28 @@ export function ProfileAvatar({
     onUploadStart?.();
 
     try {
-      const options = {
-        maxSizeMB: 0.5,
-        maxWidthOrHeight: 1024,
-        useWebWorker: true,
-        fileType: file.type,
-      };
+      const compressedFile = await compressImage(file);
 
-      const compressedFile = await imageCompression(file, options);
       const reader = new FileReader();
-
-      const uploadAvatar = async (base64String: string) => {
-        const response = await fetch("/api/user/update-avatar", {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ image: base64String }),
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || "Failed to update profile picture");
-        }
-
-        toast.success("Profile picture updated successfully");
-        router.refresh();
-
-        if (refetch && typeof refetch === "function") {
-          try {
-            await refetch();
-          } catch {
-            // Silently fail if refetch fails - session will update on next page load
-          }
-        }
-
-        onUploadComplete?.();
-      };
 
       reader.onloadend = async () => {
         const base64String = reader.result as string;
+
+        if (
+          !validateBase64Size(
+            base64String,
+            setIsUploadingAvatar,
+            onUploadComplete,
+            fileInputRef
+          )
+        ) {
+          return;
+        }
+
         setAvatarPreview(base64String);
 
         try {
-          await uploadAvatar(base64String);
+          await uploadAvatar(base64String, router, refetch, onUploadComplete);
         } catch (error) {
           console.error("Error uploading avatar:", error);
           toast.error(
@@ -129,15 +207,10 @@ export function ProfileAvatar({
 
       reader.readAsDataURL(compressedFile);
     } catch (error) {
-      console.error("Error compressing image:", error);
-      toast.error("Failed to process image. Please try again.");
-      setIsUploadingAvatar(false);
-      onUploadComplete?.();
+      handleCompressionError(error, setIsUploadingAvatar, onUploadComplete);
     }
 
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+    resetFileInput(fileInputRef);
   };
 
   return (

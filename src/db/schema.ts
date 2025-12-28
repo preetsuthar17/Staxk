@@ -17,13 +17,17 @@ export const user = pgTable(
     emailVerified: boolean("email_verified").default(false).notNull(),
     image: text("image"),
     username: text("username").unique(),
+    displayUsername: text("display_username").unique(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .defaultNow()
       .$onUpdate(() => /* @__PURE__ */ new Date())
       .notNull(),
   },
-  (table) => [index("user_username_idx").on(table.username)]
+  (table) => [
+    index("user_username_idx").on(table.username),
+    index("user_display_username_idx").on(table.displayUsername),
+  ]
 );
 
 export const session = pgTable(

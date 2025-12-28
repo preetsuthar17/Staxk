@@ -3,9 +3,58 @@
 import { CheckCircle2, Loader2, XCircle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
-import { validateUsernameFormat } from "@/lib/username";
+import { authClient } from "@/lib/auth-client";
 
 const CACHE_DURATION = 5 * 60 * 1000;
+
+const USERNAME_STARTS_WITH_LETTER_REGEX = /^[a-z]/i;
+const USERNAME_ALPHANUMERIC_UNDERSCORE_REGEX = /^[a-z0-9_]+$/;
+
+/**
+ * Validates username format
+ * Rules:
+ * - 3-30 characters
+ * - Only lowercase letters, numbers, and underscores
+ * - Must start with a letter
+ * - Cannot end with underscore
+ */
+function validateUsernameFormat(username: string): {
+  valid: boolean;
+  error?: string;
+} {
+  if (!username || username.length < 3) {
+    return { valid: false, error: "Username must be at least 3 characters" };
+  }
+
+  if (username.length > 30) {
+    return { valid: false, error: "Username must be 30 characters or less" };
+  }
+
+  if (!USERNAME_STARTS_WITH_LETTER_REGEX.test(username)) {
+    return { valid: false, error: "Username must start with a letter" };
+  }
+
+  if (!USERNAME_ALPHANUMERIC_UNDERSCORE_REGEX.test(username)) {
+    return {
+      valid: false,
+      error:
+        "Username can only contain lowercase letters, numbers, and underscores",
+    };
+  }
+
+  if (username.endsWith("_")) {
+    return { valid: false, error: "Username cannot end with an underscore" };
+  }
+
+  if (username.includes("__")) {
+    return {
+      valid: false,
+      error: "Username cannot contain consecutive underscores",
+    };
+  }
+
+  return { valid: true };
+}
 
 interface UsernameInputProps {
   value: string;
@@ -130,32 +179,31 @@ export function useUsernameAvailability(
 
     usernameCheckTimeoutRef.current = setTimeout(async () => {
       try {
-        const response = await fetch("/api/user/check-username", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username: normalizedUsername }),
+        // Use better-auth's isUsernameAvailable
+        const { data, error } = await authClient.isUsernameAvailable({
+          username: normalizedUsername,
         });
 
-        const data = await response.json();
-
-        if (!response.ok) {
+        if (error) {
           setAvailability({
             checking: false,
             available: false,
-            error: data.error || "Error checking username",
+            error: error.message || "Error checking username",
           });
           return;
         }
 
+        const isAvailable = data?.available ?? false;
+
         usernameCacheRef.current.set(normalizedUsername, {
-          available: data.available,
+          available: isAvailable,
           timestamp: now,
         });
 
         setAvailability({
           checking: false,
-          available: data.available,
-          error: data.available ? null : "Username is already taken",
+          available: isAvailable,
+          error: isAvailable ? null : "Username is already taken",
         });
       } catch {
         setAvailability({
