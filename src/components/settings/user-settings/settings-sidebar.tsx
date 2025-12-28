@@ -106,7 +106,7 @@ export function SettingsSidebar() {
     >
       <div className="flex flex-col gap-4 p-4">
         <Button
-          className="w-full items-center justify-start gap-2 px-2"
+          className="w-full items-center justify-start cursor-pointer gap-2 px-2"
           size={"sm"}
           variant="ghost"
         >
