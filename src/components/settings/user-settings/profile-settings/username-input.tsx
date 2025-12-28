@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import { CheckCircle2, Loader2, XCircle } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { validateUsernameFormat } from "@/lib/username";
 
@@ -35,14 +35,14 @@ export function UsernameInput({
     <div className="flex-1">
       <div className="relative">
         <Input
+          aria-describedby={ariaDescribedBy}
+          aria-invalid={error ? "true" : "false"}
+          className={value ? "pr-10" : ""}
+          disabled={disabled}
           id="username"
-          value={value}
           onChange={handleChange}
           placeholder="username_123"
-          disabled={disabled}
-          aria-invalid={error ? "true" : "false"}
-          aria-describedby={ariaDescribedBy}
-          className={value ? "pr-10" : ""}
+          value={value}
         />
         {value && (
           <div className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2">
@@ -78,7 +78,10 @@ export function UsernameInput({
   );
 }
 
-export function useUsernameAvailability(username: string, currentUsername?: string) {
+export function useUsernameAvailability(
+  username: string,
+  currentUsername?: string
+) {
   const [availability, setAvailability] = useState<{
     checking: boolean;
     available: boolean | null;
@@ -86,7 +89,9 @@ export function useUsernameAvailability(username: string, currentUsername?: stri
   }>({ checking: false, available: null, error: null });
 
   const usernameCheckTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const usernameCacheRef = useRef<Map<string, { available: boolean; timestamp: number }>>(new Map());
+  const usernameCacheRef = useRef<
+    Map<string, { available: boolean; timestamp: number }>
+  >(new Map());
 
   useEffect(() => {
     if (!username || username === currentUsername) {

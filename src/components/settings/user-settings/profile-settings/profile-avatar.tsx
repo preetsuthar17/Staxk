@@ -1,15 +1,20 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import imageCompression from "browser-image-compression";
 import { Camera, User as UserIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { useSession } from "@/lib/auth-client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { useSession } from "@/lib/auth-client";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
@@ -39,11 +44,11 @@ export function ProfileAvatar({
     }
   }, [session?.user?.image, avatarPreview]);
 
-  const handleAvatarChange = async (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+      return;
+    }
 
     if (!file.type.startsWith("image/")) {
       toast.error("Please select a valid image file");
@@ -90,7 +95,9 @@ export function ProfileAvatar({
         if (refetch && typeof refetch === "function") {
           try {
             await refetch();
-          } catch { }
+          } catch {
+            // Silently fail if refetch fails - session will update on next page load
+          }
         }
 
         onUploadComplete?.();
@@ -141,17 +148,17 @@ export function ProfileAvatar({
           <Label className="font-medium text-sm" htmlFor="avatar-upload">
             Profile picture
           </Label>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-muted-foreground text-xs">
             Maximum upload size is 5MB
           </p>
         </div>
         <TooltipProvider>
           <Tooltip>
-            <TooltipTrigger >
+            <TooltipTrigger>
               <button
                 aria-busy={isUploadingAvatar}
                 aria-label="Change profile picture"
-                className="relative rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 group"
+                className="group relative rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 disabled={isUploadingAvatar}
                 onClick={() => fileInputRef.current?.click()}
                 type="button"
@@ -168,10 +175,11 @@ export function ProfileAvatar({
                   </AvatarFallback>
                 </Avatar>
                 <div
-                  className={`absolute inset-0 flex items-center justify-center rounded-full bg-black/60 transition-opacity ${isUploadingAvatar
+                  className={`absolute inset-0 flex items-center justify-center rounded-full bg-black/60 transition-opacity ${
+                    isUploadingAvatar
                       ? "opacity-100"
                       : "opacity-0 group-hover:opacity-100"
-                    }`}
+                  }`}
                 >
                   {isUploadingAvatar ? (
                     <Spinner className="size-4 text-white" />
@@ -181,7 +189,7 @@ export function ProfileAvatar({
                 </div>
               </button>
             </TooltipTrigger>
-            <TooltipContent side="top" align="center" sideOffset={6}>
+            <TooltipContent align="center" side="top" sideOffset={6}>
               Change profile picture
             </TooltipContent>
           </Tooltip>

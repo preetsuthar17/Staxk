@@ -21,7 +21,8 @@ export async function PATCH(request: Request) {
     const { image } = body;
 
     if (image === null) {
-      await db.update(user)
+      await db
+        .update(user)
         .set({ image: null })
         .where(eq(user.id, session.user.id));
       return NextResponse.json(
@@ -48,9 +49,7 @@ export async function PATCH(request: Request) {
       );
     }
 
-    await db.update(user)
-      .set({ image })
-      .where(eq(user.id, session.user.id));
+    await db.update(user).set({ image }).where(eq(user.id, session.user.id));
 
     return NextResponse.json(
       { success: true, message: "Profile picture updated successfully" },

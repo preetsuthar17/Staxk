@@ -38,12 +38,7 @@ export async function PATCH(request: Request) {
     const existingUser = await db
       .select()
       .from(user)
-      .where(
-        and(
-          eq(user.username, username),
-          ne(user.id, session.user.id)
-        )
-      )
+      .where(and(eq(user.username, username), ne(user.id, session.user.id)))
       .limit(1);
 
     if (existingUser.length > 0) {

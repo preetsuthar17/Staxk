@@ -8,7 +8,9 @@ interface NotificationPageProps {
   params: Promise<{ userId: string }>;
 }
 
-export default async function NotificationPage({ params }: NotificationPageProps) {
+export default async function NotificationPage({
+  params,
+}: NotificationPageProps) {
   const { userId } = await params;
   const session = await auth.api.getSession({
     headers: await headers(),

@@ -8,7 +8,9 @@ interface PreferencesPageProps {
   params: Promise<{ userId: string }>;
 }
 
-export default async function PreferencesPage({ params }: PreferencesPageProps) {
+export default async function PreferencesPage({
+  params,
+}: PreferencesPageProps) {
   const { userId } = await params;
   const session = await auth.api.getSession({
     headers: await headers(),

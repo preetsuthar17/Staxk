@@ -1,27 +1,27 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
 import { CheckCircle2, Loader2, Pencil, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useSession } from "@/lib/auth-client";
 import { validateUsernameFormat } from "@/lib/username";
 import { ProfileAvatar } from "./profile-avatar";
 import { UsernameInput, useUsernameAvailability } from "./username-input";
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-  TooltipProvider,
-} from "@/components/ui/tooltip";
 
 const profileSchema = z.object({
   name: z.string().min(1, "Name cannot be empty").trim(),
@@ -55,7 +55,6 @@ function UsernameSection({
   onValueChange,
   error,
 }: UsernameSectionProps) {
-
   return (
     <div className="flex w-full flex-col items-start gap-2">
       <Label className="font-medium text-sm" htmlFor="username">
@@ -89,7 +88,7 @@ function UsernameSection({
                       <X className="size-4" />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent side="top" align="center" sideOffset={6}>
+                  <TooltipContent align="center" side="top" sideOffset={6}>
                     Cancel
                   </TooltipContent>
                 </Tooltip>
@@ -99,20 +98,25 @@ function UsernameSection({
                   <TooltipTrigger>
                     <Button
                       aria-label="Save username"
+                      className="h-9"
                       disabled={
                         isSavingUsername ||
                         usernameAvailability.available === false ||
                         usernameAvailability.checking ||
-                        usernameEditValue.trim().toLowerCase() === username.toLowerCase()
+                        usernameEditValue.trim().toLowerCase() ===
+                          username.toLowerCase()
                       }
-                      className="h-9"
                       onClick={onSave}
                       type="button"
                     >
-                      {isSavingUsername ? <Spinner className="size-4" /> : "Save"}
+                      {isSavingUsername ? (
+                        <Spinner className="size-4" />
+                      ) : (
+                        "Save"
+                      )}
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent side="top" align="center" sideOffset={6}>
+                  <TooltipContent align="center" side="top" sideOffset={6}>
                     Save username
                   </TooltipContent>
                 </Tooltip>
@@ -143,7 +147,7 @@ function UsernameSection({
                     <Pencil className="size-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent side="top" align="center" sideOffset={6}>
+                <TooltipContent align="center" side="top" sideOffset={6}>
                   Edit username
                 </TooltipContent>
               </Tooltip>
@@ -191,7 +195,9 @@ export function ProfileSettings() {
   const refetch = "refetch" in sessionData ? sessionData.refetch : undefined;
 
   const [isInitialized, setIsInitialized] = useState(false);
-  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [saveStatus, setSaveStatus] = useState<
+    "idle" | "saving" | "saved" | "error"
+  >("idle");
   const [username, setUsername] = useState("");
   const [isEditingUsername, setIsEditingUsername] = useState(false);
   const [usernameEditValue, setUsernameEditValue] = useState("");
@@ -242,6 +248,7 @@ export function ProfileSettings() {
         setFormValues(sessionUsername, sessionName);
       }
     } catch {
+      // Fallback to session data if API call fails
       setFormValues(sessionUsername, sessionName);
     }
   }, [session?.user, setFormValues]);
@@ -262,7 +269,9 @@ export function ProfileSettings() {
         setUsername(dbUsername);
         setValue("username", dbUsername, { shouldValidate: false });
       }
-    } catch { }
+    } catch {
+      // Silently fail if API call fails
+    }
   }, [setValue]);
 
   useEffect(() => {
@@ -325,7 +334,9 @@ export function ProfileSettings() {
     if (refetch && typeof refetch === "function") {
       try {
         await refetch();
-      } catch { }
+      } catch {
+        // Silently fail if refetch fails - session will update on next page load
+      }
     }
   }, [refetch]);
 

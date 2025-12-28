@@ -55,10 +55,7 @@ export async function POST(request: Request) {
       .select({ id: user.id })
       .from(user)
       .where(
-        and(
-          eq(user.username, normalizedUsername),
-          ne(user.id, session.user.id)
-        )
+        and(eq(user.username, normalizedUsername), ne(user.id, session.user.id))
       )
       .limit(1);
 
