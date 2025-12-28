@@ -17,7 +17,7 @@ import {
 
 interface Session {
   id: string;
-  token: string;
+  tokenPrefix: string; // Only partial token for display
   createdAt: string;
   updatedAt?: string;
   expiresAt: string;
@@ -149,7 +149,6 @@ function formatFullDate(dateString: string): string {
   });
 }
 
-// Redesigned skeleton component to closely resemble the actual session item
 function SessionItemSkeleton({ isCurrent = false }: { isCurrent?: boolean }) {
   return (
     <div
@@ -158,7 +157,6 @@ function SessionItemSkeleton({ isCurrent = false }: { isCurrent?: boolean }) {
       } p-3 px-4`}
     >
       <div className="flex flex-1 items-start gap-4">
-        {/* Icon skeleton */}
         <div className="mt-0.5 size-5 animate-pulse rounded bg-muted" />
         <div className="flex flex-1 flex-col gap-1.5">
           <div className="flex items-center gap-2">
@@ -174,7 +172,6 @@ function SessionItemSkeleton({ isCurrent = false }: { isCurrent?: boolean }) {
           </div>
         </div>
       </div>
-      {/* Skeleton for the right-side button (Log out / Revoke session) */}
       <div>
         <div className="h-8 w-8 animate-pulse rounded bg-muted" />
       </div>
@@ -186,7 +183,9 @@ export function SessionList() {
   const router = useRouter();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [revokingToken, setRevokingToken] = useState<string | null>(null);
+  const [revokingSessionId, setRevokingSessionId] = useState<string | null>(
+    null
+  );
 
   const fetchSessions = useCallback(async () => {
     try {
@@ -212,13 +211,13 @@ export function SessionList() {
     fetchSessions();
   }, [fetchSessions]);
 
-  const handleRevokeSession = async (token: string) => {
-    setRevokingToken(token);
+  const handleRevokeSession = async (sessionId: string) => {
+    setRevokingSessionId(sessionId);
     try {
       const response = await fetch("/api/user/sessions/revoke", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token }),
+        body: JSON.stringify({ sessionId }),
       });
 
       const data = await response.json();
@@ -236,7 +235,7 @@ export function SessionList() {
         error instanceof Error ? error.message : "Failed to revoke session"
       );
     } finally {
-      setRevokingToken(null);
+      setRevokingSessionId(null);
     }
   };
 
@@ -249,12 +248,10 @@ export function SessionList() {
         </div>
 
         <div className="flex w-full flex-col gap-4">
-          {/* Current session skeleton */}
           <SessionItemSkeleton isCurrent />
 
           <Separator className="my-2" />
 
-          {/* Other sessions skeleton */}
           {[1, 2, 3].map((i) => (
             <SessionItemSkeleton key={i} />
           ))}
@@ -386,13 +383,13 @@ export function SessionList() {
                           <Button
                             aria-label="Revoke session"
                             className="h-8 w-8"
-                            disabled={revokingToken === session.token}
-                            onClick={() => handleRevokeSession(session.token)}
+                            disabled={revokingSessionId === session.id}
+                            onClick={() => handleRevokeSession(session.id)}
                             size="icon"
                             type="button"
                             variant="destructive"
                           >
-                            {revokingToken === session.token ? (
+                            {revokingSessionId === session.id ? (
                               <Spinner className="size-3" />
                             ) : (
                               <LogOut className="size-4" />

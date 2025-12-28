@@ -33,8 +33,8 @@ export const auth = betterAuth({
     },
   }),
   session: {
-    expiresIn: 60 * 60 * 24 * 7, // 7 days
-    updateAge: 60 * 60 * 24, // update session every 24 hours
+    expiresIn: 60 * 60 * 24 * 7,
+    updateAge: 60 * 60 * 24,
   },
   emailAndPassword: {
     enabled: true,
@@ -87,11 +87,10 @@ export const auth = betterAuth({
   ],
   rateLimit: {
     enabled: process.env.NODE_ENV === "production",
-    window: 60, // time window in seconds
-    max: 100, // max requests in the window
+    window: 60,
+    max: 100,
     storage: "database",
     customRules: {
-      // Sign-in endpoints - stricter limits to prevent brute force
       "/sign-in/email": {
         window: 10,
         max: 3,
@@ -104,12 +103,10 @@ export const auth = betterAuth({
         window: 60,
         max: 10,
       },
-      // Sign-up - prevent spam account creation
       "/sign-up/email": {
         window: 60,
         max: 5,
       },
-      // Password operations - sensitive
       "/change-password": {
         window: 60,
         max: 3,
@@ -122,12 +119,10 @@ export const auth = betterAuth({
         window: 60,
         max: 3,
       },
-      // Username availability - moderate limit
       "/is-username-available": {
         window: 10,
         max: 10,
       },
-      // Session operations - less strict
       "/get-session": {
         window: 10,
         max: 30,

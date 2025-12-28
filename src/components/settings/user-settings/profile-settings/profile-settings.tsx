@@ -302,7 +302,6 @@ export function ProfileSettings() {
     }
   }, [session?.user, isInitialized, initializeFormData]);
 
-  // Update username from session when it changes
   useEffect(() => {
     if (
       session?.user?.id &&
@@ -328,7 +327,6 @@ export function ProfileSettings() {
   }, []);
 
   const updateUsername = useCallback(async (usernameValue: string) => {
-    // Use better-auth's updateUser for username updates
     const { error } = await updateUser({
       username: usernameValue,
     });
@@ -341,7 +339,6 @@ export function ProfileSettings() {
   }, []);
 
   const refreshUsernameFromSession = useCallback(() => {
-    // Invalidate cached user ID to trigger refresh from session
     lastFetchedUserIdRef.current = null;
   }, []);
 
@@ -349,9 +346,7 @@ export function ProfileSettings() {
     if (refetch && typeof refetch === "function") {
       try {
         await refetch();
-      } catch {
-        // Silently fail if refetch fails - session will update on next page load
-      }
+      } catch {}
     }
   }, [refetch]);
 
@@ -491,7 +486,6 @@ export function ProfileSettings() {
 
   const saveUsernameUpdate = useCallback(
     async (trimmedUsername: string) => {
-      // Use better-auth's updateUser for username updates
       const { error } = await updateUser({
         username: trimmedUsername,
       });

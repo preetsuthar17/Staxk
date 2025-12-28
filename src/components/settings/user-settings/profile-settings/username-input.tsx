@@ -179,7 +179,6 @@ export function useUsernameAvailability(
 
     usernameCheckTimeoutRef.current = setTimeout(async () => {
       try {
-        // Use better-auth's isUsernameAvailable
         const { data, error } = await authClient.isUsernameAvailable({
           username: normalizedUsername,
         });

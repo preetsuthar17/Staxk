@@ -262,7 +262,6 @@ export function SignupCard() {
   };
 
   const generateUsernameFromName = (nameValue: string): string => {
-    // Convert to lowercase and replace spaces with underscores
     const normalized = nameValue
       .toLowerCase()
       .trim()
@@ -271,7 +270,6 @@ export function SignupCard() {
       .replace(/_+/g, "_")
       .replace(/^_|_$/g, "");
 
-    // Generate 6 random digits
     const randomDigits = Math.floor(
       100_000 + Math.random() * 900_000
     ).toString();
@@ -280,7 +278,6 @@ export function SignupCard() {
   };
 
   const performEmailSignup = async () => {
-    // Generate a username from the user's name
     const generatedUsername = generateUsernameFromName(name);
 
     const { error } = await signUp.email({
@@ -341,7 +338,6 @@ export function SignupCard() {
         );
         setGoogleLoading(false);
       }
-      // OAuth users can set their username later in profile settings
     } catch (err) {
       toast.error(
         err instanceof Error

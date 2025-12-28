@@ -12,7 +12,6 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get all active sessions for the user (not expired)
     const sessions = await db
       .select({
         id: session.id,
@@ -27,16 +26,20 @@ export async function GET() {
       .where(eq(session.userId, currentSession.user.id))
       .orderBy(desc(session.createdAt));
 
-    // Filter out expired sessions
     const now = new Date();
     const activeSessions = sessions.filter(
       (s) => s.expiresAt && new Date(s.expiresAt) > now
     );
 
-    // Identify current session
     const currentSessionToken = currentSession.session?.token;
     const sessionsWithCurrent = activeSessions.map((s) => ({
-      ...s,
+      id: s.id,
+      tokenPrefix: s.token.substring(0, 8) + "...",
+      createdAt: s.createdAt,
+      updatedAt: s.updatedAt,
+      expiresAt: s.expiresAt,
+      ipAddress: s.ipAddress,
+      userAgent: s.userAgent,
       isCurrent: s.token === currentSessionToken,
     }));
 

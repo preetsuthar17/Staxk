@@ -424,7 +424,6 @@ export function LoginCard() {
       </div>
 
       <div className="flex flex-col gap-2">
-        {/* Passkey first if last used */}
         {showPasskeyFirst && passkeySupported && (
           <>
             <PasskeyButton
@@ -437,7 +436,6 @@ export function LoginCard() {
           </>
         )}
 
-        {/* Google first if last used */}
         {showGoogleFirst && (
           <>
             <GoogleButton

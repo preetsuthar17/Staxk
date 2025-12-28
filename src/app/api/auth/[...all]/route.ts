@@ -13,7 +13,6 @@ async function handleAuthRequest(
   } catch (error) {
     console.error("Better Auth error:", error);
 
-    // Check if it's a database connection error
     if (
       error instanceof Error &&
       (error.message.includes("relation") ||
@@ -41,7 +40,6 @@ async function handleAuthRequest(
       );
     }
 
-    // Re-throw other errors to be handled by Better Auth
     throw error;
   }
 }

@@ -13,10 +13,9 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { token, revokeAll } = body;
+    const { sessionId, revokeAll } = body;
 
     if (revokeAll === true) {
-      // Revoke all sessions for the user
       await db
         .delete(session)
         .where(eq(session.userId, currentSession.user.id));
@@ -27,18 +26,17 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!token || typeof token !== "string") {
+    if (!sessionId || typeof sessionId !== "string") {
       return NextResponse.json(
-        { error: "Session token is required" },
+        { error: "Session ID is required" },
         { status: 400 }
       );
     }
 
-    // Verify the session belongs to the user
     const sessionToRevoke = await db
       .select()
       .from(session)
-      .where(eq(session.token, token))
+      .where(eq(session.id, sessionId))
       .limit(1);
 
     if (sessionToRevoke.length === 0) {
@@ -49,8 +47,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
-    // Delete the session
-    await db.delete(session).where(eq(session.token, token));
+    const currentSessionId = currentSession.session?.id;
+    if (sessionId === currentSessionId) {
+      return NextResponse.json(
+        { error: "Cannot revoke current session. Please use logout instead." },
+        { status: 400 }
+      );
+    }
+
+    await db.delete(session).where(eq(session.id, sessionId));
 
     return NextResponse.json(
       { success: true, message: "Session revoked successfully" },

@@ -102,9 +102,7 @@ async function uploadAvatar(
   if (refetch && typeof refetch === "function") {
     try {
       await refetch();
-    } catch {
-      // Silently fail if refetch fails - session will update on next page load
-    }
+    } catch {}
   }
 
   onUploadComplete?.();
