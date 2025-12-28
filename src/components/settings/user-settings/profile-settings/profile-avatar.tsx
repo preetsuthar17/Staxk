@@ -9,6 +9,7 @@ import { useSession } from "@/lib/auth-client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
@@ -89,7 +90,7 @@ export function ProfileAvatar({
         if (refetch && typeof refetch === "function") {
           try {
             await refetch();
-          } catch {}
+          } catch { }
         }
 
         onUploadComplete?.();
@@ -136,44 +137,55 @@ export function ProfileAvatar({
   return (
     <>
       <div className="flex items-center justify-between">
-        <Label className="font-medium text-sm" htmlFor="avatar-upload">
-          Profile picture
-        </Label>
-        <div className="group relative">
-          <button
-            aria-busy={isUploadingAvatar}
-            aria-label="Change profile picture"
-            className="relative rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            disabled={isUploadingAvatar}
-            onClick={() => fileInputRef.current?.click()}
-            type="button"
-          >
-            <Avatar className="size-9 ring-2 ring-border transition-all group-hover:ring-ring">
-              <AvatarImage
-                alt="Profile picture"
-                src={avatarPreview || undefined}
-              />
-              <AvatarFallback className="text-lg">
-                {name?.charAt(0).toUpperCase() || (
-                  <UserIcon className="size-6 opacity-50" />
-                )}
-              </AvatarFallback>
-            </Avatar>
-            <div
-              className={`absolute inset-0 flex items-center justify-center rounded-full bg-black/60 transition-opacity ${
-                isUploadingAvatar
-                  ? "opacity-100"
-                  : "opacity-0 group-hover:opacity-100"
-              }`}
-            >
-              {isUploadingAvatar ? (
-                <Spinner className="size-4 text-white" />
-              ) : (
-                <Camera className="size-4 text-white" />
-              )}
-            </div>
-          </button>
+        <div className="flex flex-col gap-2">
+          <Label className="font-medium text-sm" htmlFor="avatar-upload">
+            Profile picture
+          </Label>
+          <p className="text-xs text-muted-foreground">
+            Maximum upload size is 5MB
+          </p>
         </div>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger >
+              <button
+                aria-busy={isUploadingAvatar}
+                aria-label="Change profile picture"
+                className="relative rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 group"
+                disabled={isUploadingAvatar}
+                onClick={() => fileInputRef.current?.click()}
+                type="button"
+              >
+                <Avatar className="size-9 ring-2 ring-border transition-all group-hover:ring-ring">
+                  <AvatarImage
+                    alt="Profile picture"
+                    src={avatarPreview || undefined}
+                  />
+                  <AvatarFallback className="text-lg">
+                    {name?.charAt(0).toUpperCase() || (
+                      <UserIcon className="size-6 opacity-50" />
+                    )}
+                  </AvatarFallback>
+                </Avatar>
+                <div
+                  className={`absolute inset-0 flex items-center justify-center rounded-full bg-black/60 transition-opacity ${isUploadingAvatar
+                      ? "opacity-100"
+                      : "opacity-0 group-hover:opacity-100"
+                    }`}
+                >
+                  {isUploadingAvatar ? (
+                    <Spinner className="size-4 text-white" />
+                  ) : (
+                    <Camera className="size-4 text-white" />
+                  )}
+                </div>
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="top" align="center" sideOffset={6}>
+              Change profile picture
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
       <input
         accept="image/*"

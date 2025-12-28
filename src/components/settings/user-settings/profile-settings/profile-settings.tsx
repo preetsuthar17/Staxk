@@ -16,6 +16,12 @@ import { useSession } from "@/lib/auth-client";
 import { validateUsernameFormat } from "@/lib/username";
 import { ProfileAvatar } from "./profile-avatar";
 import { UsernameInput, useUsernameAvailability } from "./username-input";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from "@/components/ui/tooltip";
 
 const profileSchema = z.object({
   name: z.string().min(1, "Name cannot be empty").trim(),
@@ -49,12 +55,13 @@ function UsernameSection({
   onValueChange,
   error,
 }: UsernameSectionProps) {
+
   return (
     <div className="flex w-full flex-col items-start gap-2">
       <Label className="font-medium text-sm" htmlFor="username">
         Username
       </Label>
-      <div className="flex w-full flex-col gap-2">
+      <div className="flex w-full flex-col gap-6">
         {isEditingUsername ? (
           <>
             <div className="flex flex-col gap-1">
@@ -67,30 +74,49 @@ function UsernameSection({
                 value={usernameEditValue}
               />
             </div>
-            <div className="flex items-center justify-end gap-2">
-              <Button
-                aria-label="Cancel editing username"
-                disabled={isSavingUsername}
-                onClick={onCancel}
-                size="icon"
-                type="button"
-                variant="ghost"
-              >
-                <X className="size-4" />
-              </Button>
-              <Button
-                disabled={
-                  isSavingUsername ||
-                  usernameAvailability.available === false ||
-                  usernameAvailability.checking ||
-                  usernameEditValue.trim().toLowerCase() === username.toLowerCase()
-                }
-                onClick={onSave}
-                size="sm"
-                type="button"
-              >
-                {isSavingUsername ? <Spinner className="size-4" /> : "Save"}
-              </Button>
+            <div className="flex items-center justify-end gap-1">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Button
+                      aria-label="Cancel editing username"
+                      disabled={isSavingUsername}
+                      onClick={onCancel}
+                      size="icon"
+                      type="button"
+                      variant="ghost"
+                    >
+                      <X className="size-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" align="center" sideOffset={6}>
+                    Cancel
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Button
+                      aria-label="Save username"
+                      disabled={
+                        isSavingUsername ||
+                        usernameAvailability.available === false ||
+                        usernameAvailability.checking ||
+                        usernameEditValue.trim().toLowerCase() === username.toLowerCase()
+                      }
+                      className="h-9"
+                      onClick={onSave}
+                      type="button"
+                    >
+                      {isSavingUsername ? <Spinner className="size-4" /> : "Save"}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" align="center" sideOffset={6}>
+                    Save username
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </>
         ) : (
@@ -104,15 +130,24 @@ function UsernameSection({
                 value={username}
               />
             </div>
-            <Button
-              className="flex size-9 items-center gap-2"
-              onClick={onEdit}
-              size="icon"
-              type="button"
-              variant="outline"
-            >
-              <Pencil className="size-4" />
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <Button
+                    className="flex size-9 items-center gap-2"
+                    onClick={onEdit}
+                    size="icon"
+                    type="button"
+                    variant="outline"
+                  >
+                    <Pencil className="size-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top" align="center" sideOffset={6}>
+                  Edit username
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         )}
       </div>
@@ -227,7 +262,7 @@ export function ProfileSettings() {
         setUsername(dbUsername);
         setValue("username", dbUsername, { shouldValidate: false });
       }
-    } catch {}
+    } catch { }
   }, [setValue]);
 
   useEffect(() => {
@@ -290,7 +325,7 @@ export function ProfileSettings() {
     if (refetch && typeof refetch === "function") {
       try {
         await refetch();
-      } catch {}
+      } catch { }
     }
   }, [refetch]);
 
