@@ -227,6 +227,14 @@ export function LoginCard() {
     } catch (err) {
       if (err instanceof Error && err.message.includes("429")) {
         toast.error("Too many requests. Please try again later.");
+      } else if (
+        err instanceof Error &&
+        (err.message.includes("ERR_RESPONSE_HEADERS_TOO_BIG") ||
+          err.message.includes("headers too big"))
+      ) {
+        toast.error(
+          "Authentication error. Please clear your browser cookies and try again."
+        );
       } else {
         toast.error(
           err instanceof Error

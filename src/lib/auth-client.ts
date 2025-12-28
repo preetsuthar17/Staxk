@@ -10,10 +10,17 @@ export const authClient = createAuthClient({
   plugins: [lastLoginMethodClient()],
   fetchOptions: {
     onError: (context) => {
-      const { response } = context;
-      if (response.status === 429) {
+      const { response, error } = context;
+      if (response?.status === 429) {
         const retryAfter = response.headers.get("X-Retry-After");
         toast.error(`Rate limit exceeded. Retry after ${retryAfter} seconds`);
+      } else if (
+        error?.message?.includes("ERR_RESPONSE_HEADERS_TOO_BIG") ||
+        error?.message?.includes("headers too big")
+      ) {
+        toast.error(
+          "Authentication error. Please clear your browser cookies and try again."
+        );
       }
     },
   },
