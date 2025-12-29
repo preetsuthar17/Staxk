@@ -9,7 +9,7 @@ export default async function ProfilePage() {
     <div className="flex h-screen overflow-hidden bg-background">
       <SettingsSidebar />
       <main className="flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-4xl p-6">
+        <div className="mx-auto max-w-xl p-6">
           <ProfileSettings />
         </div>
       </main>

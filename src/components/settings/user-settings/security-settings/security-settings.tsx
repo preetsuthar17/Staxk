@@ -8,7 +8,7 @@ import { TwoFactorSettings } from "./two-factor-settings";
 
 export function SecuritySettings() {
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-col gap-6">
+    <div className="mx-auto flex w-full flex-col gap-6">
       <div>
         <h1 className="font-medium text-xl">Security</h1>
       </div>
