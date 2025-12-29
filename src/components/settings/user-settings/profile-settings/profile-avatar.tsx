@@ -106,7 +106,7 @@ async function uploadAvatar(
     try {
       await refetch();
     } catch {
-      // empty
+      // Silently ignore refetch errors
     }
   }
 

@@ -9,6 +9,7 @@ interface NavMenuItem {
   icon: LucideIcon;
   label: string;
   isWorkspaceAware?: boolean;
+  notificationCount?: number;
 }
 
 interface NavMenuProps {
@@ -36,6 +37,7 @@ export function NavMenu({ items, pathname, workspaceSlug }: NavMenuProps) {
             icon={item.icon}
             isActive={isActive}
             key={item.label}
+            notificationCount={item.notificationCount}
           >
             {item.label}
           </NavLink>

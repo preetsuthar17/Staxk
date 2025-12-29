@@ -8,6 +8,7 @@ interface NavLinkProps {
   href: string;
   icon: LucideIcon;
   isActive?: boolean;
+  notificationCount?: number;
 }
 
 export function NavLink({
@@ -15,7 +16,10 @@ export function NavLink({
   href,
   icon: Icon,
   isActive = false,
+  notificationCount = 0,
 }: NavLinkProps) {
+  const hasNotifications = notificationCount > 0;
+
   return (
     <li className="list-none">
       <Link
@@ -24,7 +28,15 @@ export function NavLink({
         }`}
         href={href}
       >
-        <Icon className="size-4 shrink-0" />
+        <div className="relative">
+          <Icon className="size-4 shrink-0" />
+          {hasNotifications && (
+            <span
+              className="absolute -top-1 -right-1 size-1.5 rounded-full bg-primary"
+              title={`${notificationCount} notification${notificationCount > 1 ? "s" : ""}`}
+            />
+          )}
+        </div>
         <span>{children}</span>
       </Link>
     </li>

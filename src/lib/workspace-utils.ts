@@ -24,6 +24,7 @@ export async function getWorkspaceBySlug(slug: string): Promise<{
   logo: string | null;
   ownerId: string;
 } | null> {
+  "use cache";
   const result = await db
     .select({
       id: workspace.id,
@@ -47,6 +48,7 @@ export async function validateWorkspaceAccess(
   | { success: true; access: WorkspaceAccess }
   | { success: false; error: string; status: number }
 > {
+  "use cache";
   const workspaceData = await getWorkspaceBySlug(workspaceSlug);
 
   if (!workspaceData) {

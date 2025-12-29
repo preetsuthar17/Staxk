@@ -6,7 +6,8 @@ export function getWorkspaceSlug(pathname: string): string | null {
     segments[0] !== "onboarding" &&
     segments[0] !== "home" &&
     segments[0] !== "login" &&
-    segments[0] !== "signup"
+    segments[0] !== "signup" &&
+    segments[0] !== "inbox"
   ) {
     return segments[0];
   }

@@ -1,0 +1,1 @@
+CREATE INDEX "two_factor_secret_idx" ON "two_factor" USING btree ("secret");

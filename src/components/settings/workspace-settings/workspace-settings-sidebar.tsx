@@ -1,9 +1,9 @@
 "use client";
 
 import type { LucideIcon } from "lucide-react";
-import { ChevronLeft, Settings as SettingsIcon } from "lucide-react";
+import { ChevronLeft, Settings as SettingsIcon, Users } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useSession } from "@/lib/auth-client";
 
@@ -64,11 +64,13 @@ export function WorkspaceSettingsSidebar({
 }: WorkspaceSettingsSidebarProps) {
   const { isPending } = useSession();
   const pathname = usePathname();
+  const router = useRouter();
 
   const basePath = `/${workspaceSlug}/settings`;
 
   const isGeneralActive =
     pathname === `${basePath}/general` || pathname === basePath;
+  const isMembersActive = pathname === `${basePath}/members`;
 
   const settingsNavItems = [
     {
@@ -76,6 +78,12 @@ export function WorkspaceSettingsSidebar({
       icon: SettingsIcon,
       label: "General",
       isActive: isGeneralActive,
+    },
+    {
+      href: `${basePath}/members`,
+      icon: Users,
+      label: "Members",
+      isActive: isMembersActive,
     },
   ];
 
@@ -88,12 +96,11 @@ export function WorkspaceSettingsSidebar({
       <div className="flex flex-col gap-4 p-4">
         <Button
           className="w-full cursor-pointer items-center justify-start gap-2 px-2"
+          onClick={() => router.back()}
           size={"sm"}
           variant="ghost"
         >
-          <Link className="flex items-center gap-2" href={`/${workspaceSlug}`}>
-            <ChevronLeft /> Go back
-          </Link>
+          <ChevronLeft /> Go back
         </Button>
         <NavMenu items={settingsNavItems} />
       </div>

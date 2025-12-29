@@ -113,7 +113,10 @@ export const twoFactor = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
   },
-  (table) => [index("two_factor_userId_idx").on(table.userId)]
+  (table) => [
+    index("two_factor_userId_idx").on(table.userId),
+    index("two_factor_secret_idx").on(table.secret),
+  ]
 );
 
 export const passkey = pgTable(
@@ -181,12 +184,39 @@ export const workspaceMember = pgTable(
   ]
 );
 
+export const workspaceInvitation = pgTable(
+  "workspace_invitation",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    email: text("email").notNull(),
+    invitedBy: text("invited_by")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    status: text("status").notNull().default("pending"), // pending, accepted, declined
+    expiresAt: timestamp("expires_at"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("workspace_invitation_workspaceId_idx").on(table.workspaceId),
+    index("workspace_invitation_email_idx").on(table.email),
+    index("workspace_invitation_status_idx").on(table.status),
+  ]
+);
+
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),
   accounts: many(account),
   passkeys: many(passkey),
   ownedWorkspaces: many(workspace),
   workspaceMemberships: many(workspaceMember),
+  sentInvitations: many(workspaceInvitation),
 }));
 
 export const workspaceRelations = relations(workspace, ({ one, many }) => ({
@@ -195,6 +225,7 @@ export const workspaceRelations = relations(workspace, ({ one, many }) => ({
     references: [user.id],
   }),
   members: many(workspaceMember),
+  invitations: many(workspaceInvitation),
 }));
 
 export const workspaceMemberRelations = relations(
@@ -231,3 +262,17 @@ export const accountRelations = relations(account, ({ one }) => ({
     references: [user.id],
   }),
 }));
+
+export const workspaceInvitationRelations = relations(
+  workspaceInvitation,
+  ({ one }) => ({
+    workspace: one(workspace, {
+      fields: [workspaceInvitation.workspaceId],
+      references: [workspace.id],
+    }),
+    inviter: one(user, {
+      fields: [workspaceInvitation.invitedBy],
+      references: [user.id],
+    }),
+  })
+);

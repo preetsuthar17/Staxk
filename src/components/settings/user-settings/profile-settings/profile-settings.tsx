@@ -348,7 +348,7 @@ export function ProfileSettings() {
       try {
         await refetch();
       } catch {
-        // empty
+        // Silently ignore refetch errors
       }
     }
   }, [refetch]);

@@ -1,13 +1,16 @@
 import { and, eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { GeneralSettings } from "@/components/settings/workspace-settings/general-settings";
 import { WorkspaceSettingsSidebar } from "@/components/settings/workspace-settings/workspace-settings-sidebar";
+import { Spinner } from "@/components/ui/spinner";
 import { db } from "@/db";
 import { workspace, workspaceMember } from "@/db/schema";
 import { auth } from "@/lib/auth";
 
-async function getWorkspace(slug: string, userId: string) {
+async function getWorkspaceData(slug: string) {
+  "use cache";
   const workspaceData = await db
     .select({
       id: workspace.id,
@@ -22,35 +25,46 @@ async function getWorkspace(slug: string, userId: string) {
     .where(eq(workspace.slug, slug))
     .limit(1);
 
-  if (workspaceData.length === 0) {
-    return null;
-  }
+  return workspaceData[0] || null;
+}
 
-  const ws = workspaceData[0];
-
-  if (ws.ownerId === userId) {
-    return ws;
-  }
-
+async function checkMembership(workspaceId: string, userId: string) {
+  "use cache";
   const membership = await db
     .select({ id: workspaceMember.id })
     .from(workspaceMember)
     .where(
       and(
-        eq(workspaceMember.workspaceId, ws.id),
+        eq(workspaceMember.workspaceId, workspaceId),
         eq(workspaceMember.userId, userId)
       )
     )
     .limit(1);
 
-  if (membership.length === 0) {
+  return membership.length > 0;
+}
+
+async function getWorkspace(slug: string, userId: string) {
+  const ws = await getWorkspaceData(slug);
+
+  if (!ws) {
+    return null;
+  }
+
+  if (ws.ownerId === userId) {
+    return ws;
+  }
+
+  const hasMembership = await checkMembership(ws.id, userId);
+
+  if (!hasMembership) {
     return null;
   }
 
   return ws;
 }
 
-export default async function GeneralSettingsPage({
+async function GeneralSettingsContent({
   params,
 }: {
   params: Promise<{ workspaceSlug: string }>;
@@ -77,5 +91,28 @@ export default async function GeneralSettingsPage({
         </div>
       </main>
     </div>
+  );
+}
+
+function GeneralSettingsLoading() {
+  return (
+    <div className="flex h-screen items-center justify-center">
+      <div className="flex flex-col items-center gap-4">
+        <Spinner />
+        <p className="font-[450] text-muted-foreground text-sm">Loading</p>
+      </div>
+    </div>
+  );
+}
+
+export default function GeneralSettingsPage({
+  params,
+}: {
+  params: Promise<{ workspaceSlug: string }>;
+}) {
+  return (
+    <Suspense fallback={<GeneralSettingsLoading />}>
+      <GeneralSettingsContent params={params} />
+    </Suspense>
   );
 }

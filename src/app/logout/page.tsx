@@ -25,7 +25,7 @@ export default function LogoutPage() {
     <div className="flex min-h-screen items-center justify-center bg-background">
       <div className="flex flex-col items-center gap-4">
         <Spinner />
-        <p className="text-muted-foreground text-sm">Signing out...</p>
+        <p className="text-muted-foreground text-sm">Signing out</p>
       </div>
     </div>
   );

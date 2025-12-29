@@ -9,7 +9,7 @@ import {
   User,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useSession } from "@/lib/auth-client";
 
@@ -64,6 +64,7 @@ function NavMenu({ items }: NavMenuProps) {
 export function SettingsSidebar() {
   const { isPending } = useSession();
   const pathname = usePathname();
+  const router = useRouter();
 
   const basePath = "/settings";
 
@@ -106,12 +107,11 @@ export function SettingsSidebar() {
       <div className="flex flex-col gap-4 p-4">
         <Button
           className="w-full cursor-pointer items-center justify-start gap-2 px-2"
+          onClick={() => router.back()}
           size={"sm"}
           variant="ghost"
         >
-          <Link className="flex items-center gap-2" href="/">
-            <ChevronLeft /> Go back
-          </Link>
+          <ChevronLeft /> Go back
         </Button>
         <NavMenu items={settingsNavItems} />
       </div>
