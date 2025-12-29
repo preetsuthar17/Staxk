@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -69,6 +69,14 @@ function NameStep({
   isLoading: boolean;
   isVisible: boolean;
 }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isVisible && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isVisible]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (value.trim().length > 0) {
@@ -86,12 +94,12 @@ function NameStep({
             Workspace Name
           </Label>
           <Input
-            autoFocus={isVisible}
             disabled={isLoading}
             id="workspace-name"
             maxLength={50}
             onChange={(e) => onChange(e.target.value)}
             placeholder="My Workspace"
+            ref={inputRef}
             value={value}
           />
         </div>
@@ -124,6 +132,14 @@ function SlugStep({
   slugAvailable: boolean;
   isVisible: boolean;
 }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isVisible && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isVisible]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (slugAvailable && !slugError) {
@@ -157,13 +173,13 @@ function SlugStep({
               staxk.app/
             </span>
             <Input
-              autoFocus={isVisible}
               className="rounded-l-none"
               disabled={isLoading}
               id="workspace-slug"
               maxLength={30}
               onChange={handleChange}
               placeholder="my-workspace"
+              ref={inputRef}
               value={value}
             />
           </div>
@@ -218,6 +234,14 @@ function DescriptionStep({
   isLoading: boolean;
   isVisible: boolean;
 }) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (isVisible && textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  }, [isVisible]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onNext();
@@ -243,6 +267,7 @@ function DescriptionStep({
             maxLength={500}
             onChange={(e) => onChange(e.target.value)}
             placeholder="What's this workspace for?"
+            ref={textareaRef}
             rows={4}
             value={value}
           />
@@ -324,7 +349,7 @@ export function OnboardingClient({ userName }: { userName: string }) {
     if (step === "welcome") {
       const timer = setTimeout(() => {
         setStep("name");
-      }, 3000);
+      }, 2000);
       return () => clearTimeout(timer);
     }
   }, [step]);
@@ -407,7 +432,6 @@ export function OnboardingClient({ userName }: { userName: string }) {
         throw new Error(data.error || "Failed to create workspace");
       }
 
-      localStorage.setItem("lastWorkspace", data.slug);
       router.push(`/${data.slug}`);
     } catch (error) {
       toast.error(

@@ -1,12 +1,14 @@
 import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
+import { Spinner } from "@/components/ui/spinner";
 import { db } from "@/db";
 import { user, workspace, workspaceMember } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { OnboardingClient } from "./onboarding-client";
 
-export default async function OnboardingPage() {
+async function OnboardingContent() {
   const session = await auth.api.getSession({ headers: await headers() });
 
   if (!session) {
@@ -51,4 +53,20 @@ export default async function OnboardingPage() {
   const userName = userData[0].name?.split(" ")[0] || "there";
 
   return <OnboardingClient userName={userName} />;
+}
+
+function LoadingFallback() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <Spinner />
+    </div>
+  );
+}
+
+export default function OnboardingPage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <OnboardingContent />
+    </Suspense>
+  );
 }

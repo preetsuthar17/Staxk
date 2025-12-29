@@ -324,7 +324,6 @@ export function MembersSettings({ workspace, userRole }: MembersSettingsProps) {
           );
           const targetWorkspace = ownWorkspace || workspaces[0];
 
-          localStorage.setItem("lastWorkspace", targetWorkspace.slug);
           localStorage.setItem("currentWorkspaceId", targetWorkspace.id);
           router.push(`/${targetWorkspace.slug}`);
         } else {

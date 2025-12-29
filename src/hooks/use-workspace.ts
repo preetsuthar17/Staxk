@@ -15,7 +15,6 @@ interface Workspace {
 }
 
 const WORKSPACE_STORAGE_KEY = "currentWorkspaceId";
-const WORKSPACE_SLUG_STORAGE_KEY = "lastWorkspace";
 
 export function useWorkspace() {
   const router = useRouter();
@@ -44,7 +43,6 @@ export function useWorkspace() {
         if (response.ok && data.workspace) {
           setCurrentWorkspace(data.workspace);
           localStorage.setItem(WORKSPACE_STORAGE_KEY, data.workspace.id);
-          localStorage.setItem(WORKSPACE_SLUG_STORAGE_KEY, data.workspace.slug);
         } else {
           setCurrentWorkspace(null);
           localStorage.removeItem(WORKSPACE_STORAGE_KEY);
@@ -62,7 +60,6 @@ export function useWorkspace() {
 
   const switchWorkspace = useCallback(
     (slug: string) => {
-      localStorage.setItem(WORKSPACE_SLUG_STORAGE_KEY, slug);
       router.push(`/${slug}`);
     },
     [router]
@@ -70,7 +67,6 @@ export function useWorkspace() {
 
   const logoutWorkspace = useCallback(() => {
     localStorage.removeItem(WORKSPACE_STORAGE_KEY);
-    localStorage.removeItem(WORKSPACE_SLUG_STORAGE_KEY);
     router.push("/");
   }, [router]);
 

@@ -1,5 +1,8 @@
+import { eq } from "drizzle-orm";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { db } from "@/db";
+import { user } from "@/db/schema";
 import { auth } from "@/lib/auth";
 
 const PUBLIC_ROUTES = [
@@ -33,6 +36,17 @@ export async function proxy(request: NextRequest) {
 
     if (!session) {
       return NextResponse.redirect(new URL("/home", request.url));
+    }
+
+    // Check if user is onboarded
+    const userData = await db
+      .select({ isOnboarded: user.isOnboarded })
+      .from(user)
+      .where(eq(user.id, session.user.id))
+      .limit(1);
+
+    if (userData.length > 0 && !userData[0].isOnboarded) {
+      return NextResponse.redirect(new URL("/onboarding", request.url));
     }
   } catch {
     return NextResponse.redirect(new URL("/home", request.url));

@@ -10,8 +10,8 @@ export default function InboxPage() {
     <div className="flex h-screen">
       <DashboardSidebar />
       <main className="flex-1 overflow-y-auto">
-        <div className="container px-4 py-8">
-          <div className="flex flex-col gap-6">
+        <div className="w-full px-4 py-8">
+          <div className="flex flex-col gap-6 w-full">
             <div className="mx-auto flex w-full max-w-xl flex-col gap-6">
               <div className="flex flex-col gap-6">
                 <div className="flex flex-col gap-2">

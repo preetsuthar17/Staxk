@@ -1,7 +1,9 @@
 import { and, eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
-import { GeneralSettings } from "@/components/settings/workspace-settings/general-settings";
+import { Suspense } from "react";
+import { WorkspaceSettingsSidebar } from "@/components/settings/workspace-settings/workspace-settings-sidebar";
+import { Spinner } from "@/components/ui/spinner";
 import { db } from "@/db";
 import { workspace, workspaceMember } from "@/db/schema";
 import { auth } from "@/lib/auth";
@@ -61,9 +63,11 @@ async function getWorkspace(slug: string, userId: string) {
   return ws;
 }
 
-export default async function GeneralSettingsPage({
+async function WorkspaceSettingsLayoutContent({
+  children,
   params,
 }: {
+  children: React.ReactNode;
   params: Promise<{ workspaceSlug: string }>;
 }) {
   const { workspaceSlug } = await params;
@@ -80,8 +84,36 @@ export default async function GeneralSettingsPage({
   }
 
   return (
-    <div className="mx-auto max-w-xl p-6">
-      <GeneralSettings workspace={workspaceData} />
+    <div className="flex h-screen overflow-hidden bg-background">
+      <WorkspaceSettingsSidebar workspaceSlug={workspaceSlug} />
+      <main className="flex-1 overflow-y-auto">{children}</main>
     </div>
+  );
+}
+
+function WorkspaceSettingsLoading() {
+  return (
+    <div className="flex h-screen items-center justify-center">
+      <div className="flex flex-col items-center gap-4">
+        <Spinner />
+        <p className="font-[450] text-muted-foreground text-sm">Loading</p>
+      </div>
+    </div>
+  );
+}
+
+export default function WorkspaceSettingsLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<{ workspaceSlug: string }>;
+}) {
+  return (
+    <Suspense fallback={<WorkspaceSettingsLoading />}>
+      <WorkspaceSettingsLayoutContent params={params}>
+        {children}
+      </WorkspaceSettingsLayoutContent>
+    </Suspense>
   );
 }

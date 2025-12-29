@@ -98,7 +98,7 @@ function QRCodeDisplay({ totpUri }: { totpUri: string }) {
   if (!qrDataUrl) {
     return (
       <div className="flex h-[200px] w-[200px] items-center justify-center">
-        <Spinner className="size-8" />
+        <Spinner />
       </div>
     );
   }

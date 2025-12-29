@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useSession } from "@/lib/auth-client";
 
@@ -65,6 +66,7 @@ export function SettingsSidebar() {
   const { isPending } = useSession();
   const pathname = usePathname();
   const router = useRouter();
+  const [workspaceSlug, setWorkspaceSlug] = useState<string | null>(null);
 
   const basePath = "/settings";
 
@@ -98,6 +100,47 @@ export function SettingsSidebar() {
     },
   ];
 
+  useEffect(() => {
+    async function getWorkspaces() {
+      try {
+        const response = await fetch("/api/workspace/list");
+        const data = await response.json();
+        return Array.isArray(data.workspaces) ? data.workspaces : [];
+      } catch {
+        return [];
+      }
+    }
+
+    async function loadWorkspace() {
+      const workspaceId = localStorage.getItem("currentWorkspaceId");
+      const workspaces = await getWorkspaces();
+
+      if (workspaceId && workspaces.length > 0) {
+        const found = workspaces.find(
+          (ws: { id: string }) => ws.id === workspaceId
+        );
+        if (found) {
+          setWorkspaceSlug(found.slug);
+          return;
+        }
+      }
+
+      if (workspaces.length > 0) {
+        setWorkspaceSlug(workspaces[0].slug);
+      }
+    }
+
+    loadWorkspace();
+  }, []);
+
+  const handleGoBack = () => {
+    if (workspaceSlug) {
+      router.push(`/${workspaceSlug}`);
+    } else {
+      router.push("/home");
+    }
+  };
+
   return (
     <aside
       className={`flex h-screen w-64 flex-col bg-card ${
@@ -107,7 +150,7 @@ export function SettingsSidebar() {
       <div className="flex flex-col gap-4 p-4">
         <Button
           className="w-full cursor-pointer items-center justify-start gap-2 px-2"
-          onClick={() => router.back()}
+          onClick={handleGoBack}
           size={"sm"}
           variant="ghost"
         >

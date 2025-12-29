@@ -87,7 +87,6 @@ export function WorkspaceSelector({ pathname }: WorkspaceSelectorProps) {
       const data = await response.json();
 
       if (response.ok && data.workspace) {
-        localStorage.setItem("lastWorkspace", slug);
         localStorage.setItem("currentWorkspaceId", data.workspace.id);
         router.push(`/${slug}`);
       } else {
@@ -100,7 +99,6 @@ export function WorkspaceSelector({ pathname }: WorkspaceSelectorProps) {
 
   const handleWorkspaceLogout = async () => {
     try {
-      localStorage.removeItem("lastWorkspace");
       localStorage.removeItem("currentWorkspaceId");
       await signOut();
       router.push("/login");
@@ -220,7 +218,6 @@ export function WorkspaceSelector({ pathname }: WorkspaceSelectorProps) {
       setIsDialogOpen(false);
       resetWorkspaceForm();
       fetchWorkspaces();
-      localStorage.setItem("lastWorkspace", data.slug);
       localStorage.setItem("currentWorkspaceId", data.id);
       router.push(`/${data.slug}`);
     } catch (error) {

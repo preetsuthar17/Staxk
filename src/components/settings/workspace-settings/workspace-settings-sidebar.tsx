@@ -96,7 +96,7 @@ export function WorkspaceSettingsSidebar({
       <div className="flex flex-col gap-4 p-4">
         <Button
           className="w-full cursor-pointer items-center justify-start gap-2 px-2"
-          onClick={() => router.back()}
+          onClick={() => router.push(`/${workspaceSlug}`)}
           size={"sm"}
           variant="ghost"
         >
