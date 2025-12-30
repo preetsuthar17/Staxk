@@ -11,25 +11,26 @@ export default async function RootPage() {
     redirect("/home");
   }
 
-  const userData = await db
-    .select({ isOnboarded: userTable.isOnboarded })
-    .from(userTable)
-    .where(eq(userTable.id, session.user.id))
-    .limit(1);
+  const [userData, userWorkspaces] = await Promise.all([
+    db
+      .select({ isOnboarded: userTable.isOnboarded })
+      .from(userTable)
+      .where(eq(userTable.id, session.user.id))
+      .limit(1),
+    db
+      .select({
+        id: workspace.id,
+        slug: workspace.slug,
+      })
+      .from(workspace)
+      .innerJoin(workspaceMember, eq(workspace.id, workspaceMember.workspaceId))
+      .where(eq(workspaceMember.userId, session.user.id))
+      .limit(1),
+  ]);
 
   if (!userData[0]?.isOnboarded) {
     redirect("/onboarding");
   }
-
-  const userWorkspaces = await db
-    .select({
-      id: workspace.id,
-      slug: workspace.slug,
-    })
-    .from(workspace)
-    .innerJoin(workspaceMember, eq(workspace.id, workspaceMember.workspaceId))
-    .where(eq(workspaceMember.userId, session.user.id))
-    .limit(1);
 
   if (userWorkspaces.length > 0) {
     redirect(`/${userWorkspaces[0].slug}`);

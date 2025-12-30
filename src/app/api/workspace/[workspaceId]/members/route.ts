@@ -38,59 +38,59 @@ export async function GET(
 
     const ws = workspaceData[0];
 
-    if (ws.ownerId !== session.user.id) {
-      const member = await db
-        .select({ id: workspaceMember.id })
-        .from(workspaceMember)
-        .where(
-          and(
-            eq(workspaceMember.workspaceId, workspaceId),
-            eq(workspaceMember.userId, session.user.id)
-          )
-        )
-        .limit(1);
-
-      if (member.length === 0) {
-        return NextResponse.json(
-          { error: "You don't have access to this workspace" },
-          { status: 403 }
-        );
-      }
-    }
-
-    const owner = await db
-      .select({
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        image: user.image,
-      })
-      .from(user)
-      .where(eq(user.id, ws.ownerId))
-      .limit(1);
-
-    const members = await db
-      .select({
-        id: workspaceMember.id,
-        userId: workspaceMember.userId,
-        role: workspaceMember.role,
-        createdAt: workspaceMember.createdAt,
-        user: {
+    const [accessCheck, owner, members] = await Promise.all([
+      ws.ownerId === session.user.id
+        ? Promise.resolve([{ id: "owner" }])
+        : db
+            .select({ id: workspaceMember.id })
+            .from(workspaceMember)
+            .where(
+              and(
+                eq(workspaceMember.workspaceId, workspaceId),
+                eq(workspaceMember.userId, session.user.id)
+              )
+            )
+            .limit(1),
+      db
+        .select({
           id: user.id,
           name: user.name,
           email: user.email,
           image: user.image,
-        },
-      })
-      .from(workspaceMember)
-      .innerJoin(user, eq(workspaceMember.userId, user.id))
-      .where(
-        and(
-          eq(workspaceMember.workspaceId, workspaceId),
-          ne(workspaceMember.userId, ws.ownerId)
+        })
+        .from(user)
+        .where(eq(user.id, ws.ownerId))
+        .limit(1),
+      db
+        .select({
+          id: workspaceMember.id,
+          userId: workspaceMember.userId,
+          role: workspaceMember.role,
+          createdAt: workspaceMember.createdAt,
+          user: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            image: user.image,
+          },
+        })
+        .from(workspaceMember)
+        .innerJoin(user, eq(workspaceMember.userId, user.id))
+        .where(
+          and(
+            eq(workspaceMember.workspaceId, workspaceId),
+            ne(workspaceMember.userId, ws.ownerId)
+          )
         )
-      )
-      .orderBy(workspaceMember.createdAt);
+        .orderBy(workspaceMember.createdAt),
+    ]);
+
+    if (ws.ownerId !== session.user.id && accessCheck.length === 0) {
+      return NextResponse.json(
+        { error: "You don't have access to this workspace" },
+        { status: 403 }
+      );
+    }
 
     const memberMap = new Map<
       string,

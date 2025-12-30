@@ -447,22 +447,17 @@ export async function PATCH(
       return NextResponse.json({ error: fieldUpdates.error }, { status: 400 });
     }
 
-    await db
+    const updated = await db
       .update(workspace)
       .set(fieldUpdates.updateData)
-      .where(eq(workspace.id, workspaceId));
-
-    const updated = await db
-      .select({
+      .where(eq(workspace.id, workspaceId))
+      .returning({
         id: workspace.id,
         name: workspace.name,
         slug: workspace.slug,
         description: workspace.description,
         timezone: workspace.timezone,
-      })
-      .from(workspace)
-      .where(eq(workspace.id, workspaceId))
-      .limit(1);
+      });
 
     return NextResponse.json(updated[0]);
   } catch (error) {

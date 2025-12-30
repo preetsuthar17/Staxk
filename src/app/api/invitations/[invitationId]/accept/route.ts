@@ -40,11 +40,23 @@ export async function POST(
 
     const inv = invitation[0];
 
-    const userData = await db
-      .select({ email: user.email })
-      .from(user)
-      .where(eq(user.id, session.user.id))
-      .limit(1);
+    const [userData, existingMember] = await Promise.all([
+      db
+        .select({ email: user.email })
+        .from(user)
+        .where(eq(user.id, session.user.id))
+        .limit(1),
+      db
+        .select({ id: workspaceMember.id })
+        .from(workspaceMember)
+        .where(
+          and(
+            eq(workspaceMember.workspaceId, inv.workspaceId),
+            eq(workspaceMember.userId, session.user.id)
+          )
+        )
+        .limit(1),
+    ]);
 
     if (userData.length === 0 || userData[0].email !== inv.email) {
       return NextResponse.json(
@@ -66,17 +78,6 @@ export async function POST(
         { status: 400 }
       );
     }
-
-    const existingMember = await db
-      .select({ id: workspaceMember.id })
-      .from(workspaceMember)
-      .where(
-        and(
-          eq(workspaceMember.workspaceId, inv.workspaceId),
-          eq(workspaceMember.userId, session.user.id)
-        )
-      )
-      .limit(1);
 
     if (existingMember.length > 0) {
       await db

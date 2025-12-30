@@ -1,4 +1,4 @@
-import { eq, or } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { db } from "@/db";
@@ -14,24 +14,38 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const allWorkspaces = await db
-      .select({
-        id: workspace.id,
-        name: workspace.name,
-        slug: workspace.slug,
-        description: workspace.description,
-        logo: workspace.logo,
-        role: workspaceMember.role,
-        ownerId: workspace.ownerId,
-      })
-      .from(workspace)
-      .leftJoin(workspaceMember, eq(workspaceMember.workspaceId, workspace.id))
-      .where(
-        or(
-          eq(workspace.ownerId, session.user.id),
-          eq(workspaceMember.userId, session.user.id)
+    const [ownedWorkspaces, memberWorkspaces] = await Promise.all([
+      db
+        .select({
+          id: workspace.id,
+          name: workspace.name,
+          slug: workspace.slug,
+          logo: workspace.logo,
+          ownerId: workspace.ownerId,
+        })
+        .from(workspace)
+        .where(eq(workspace.ownerId, session.user.id)),
+      db
+        .select({
+          id: workspace.id,
+          name: workspace.name,
+          slug: workspace.slug,
+          logo: workspace.logo,
+          role: workspaceMember.role,
+          ownerId: workspace.ownerId,
+        })
+        .from(workspace)
+        .innerJoin(
+          workspaceMember,
+          eq(workspaceMember.workspaceId, workspace.id)
         )
-      );
+        .where(eq(workspaceMember.userId, session.user.id)),
+    ]);
+
+    const allWorkspaces = [
+      ...ownedWorkspaces.map((ws) => ({ ...ws, role: "owner" as const })),
+      ...memberWorkspaces,
+    ];
 
     const workspaceMap = new Map<
       string,
@@ -39,7 +53,6 @@ export async function GET() {
         id: string;
         name: string;
         slug: string;
-        description: string | null;
         logo: string | null;
         role: string;
       }
@@ -53,7 +66,6 @@ export async function GET() {
           id: ws.id,
           name: ws.name,
           slug: ws.slug,
-          description: ws.description,
           logo: ws.logo,
           role: "owner",
         });
@@ -62,7 +74,6 @@ export async function GET() {
           id: ws.id,
           name: ws.name,
           slug: ws.slug,
-          description: ws.description,
           logo: ws.logo,
           role: ws.role,
         });
@@ -71,7 +82,14 @@ export async function GET() {
 
     const workspaces = Array.from(workspaceMap.values());
 
-    return NextResponse.json({ workspaces });
+    return NextResponse.json(
+      { workspaces },
+      {
+        headers: {
+          "Cache-Control": "private, max-age=60",
+        },
+      }
+    );
   } catch (error) {
     safeError("Error listing workspaces:", error);
     return NextResponse.json(

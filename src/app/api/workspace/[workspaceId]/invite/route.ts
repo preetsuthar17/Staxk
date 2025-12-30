@@ -212,18 +212,21 @@ export async function POST(
       );
     }
 
-    const pendingCheck = await checkPendingInvitation(workspaceId, validEmail);
+    const [pendingCheck, existingUser] = await Promise.all([
+      checkPendingInvitation(workspaceId, validEmail),
+      db
+        .select({ id: user.id })
+        .from(user)
+        .where(eq(user.email, validEmail))
+        .limit(1),
+    ]);
+
     if (pendingCheck.hasPending) {
       return NextResponse.json(
         { error: "An invitation has already been sent to this email" },
         { status: 400 }
       );
     }
-    const existingUser = await db
-      .select({ id: user.id })
-      .from(user)
-      .where(eq(user.email, validEmail))
-      .limit(1);
 
     if (existingUser.length > 0) {
       const userId = existingUser[0].id;
