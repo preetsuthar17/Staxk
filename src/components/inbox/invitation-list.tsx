@@ -157,9 +157,14 @@ export function InvitationList() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <Spinner />
-      </div>
+
+      <Card>
+        <CardContent className="flex flex-col items-center justify-center py-12">
+          <p className="text-muted-foreground text-sm">
+            <Spinner />
+          </p>
+        </CardContent>
+      </Card>
     );
   }
 

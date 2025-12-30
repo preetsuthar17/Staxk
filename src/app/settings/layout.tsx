@@ -1,6 +1,6 @@
+import Image from "next/image";
 import { Suspense } from "react";
 import { SettingsSidebar } from "@/components/settings/user-settings/settings-sidebar";
-import { Spinner } from "@/components/ui/spinner";
 import { requireSession } from "@/lib/auth-utils";
 
 async function SettingsLayoutContent({
@@ -22,7 +22,16 @@ function SettingsLoading() {
   return (
     <div className="flex h-screen items-center justify-center">
       <div className="flex flex-col items-center gap-4">
-        <Spinner />
+        <Image
+          alt="Logo"
+          className="animate-pulse grayscale"
+          height={32}
+          src="/logo.svg"
+          width={32}
+        />
+        <p className="font-[450] text-muted-foreground text-sm">
+          Loading settings
+        </p>
       </div>
     </div>
   );

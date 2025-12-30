@@ -1,9 +1,9 @@
 import { and, eq } from "drizzle-orm";
 import { headers } from "next/headers";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { WorkspaceSettingsSidebar } from "@/components/settings/workspace-settings/workspace-settings-sidebar";
-import { Spinner } from "@/components/ui/spinner";
 import { db } from "@/db";
 import { workspace, workspaceMember } from "@/db/schema";
 import { auth } from "@/lib/auth";
@@ -94,7 +94,16 @@ function WorkspaceSettingsLoading() {
   return (
     <div className="flex h-screen items-center justify-center">
       <div className="flex flex-col items-center gap-4">
-        <Spinner />
+        <Image
+          alt="Logo"
+          className="animate-pulse grayscale"
+          height={32}
+          src="/logo.svg"
+          width={32}
+        />
+        <p className="font-[450] text-muted-foreground text-sm">
+          Loading workspace settings
+        </p>
       </div>
     </div>
   );

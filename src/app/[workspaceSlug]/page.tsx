@@ -1,6 +1,6 @@
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { Spinner } from "@/components/ui/spinner";
 import { WorkspaceDashboard } from "@/components/workspace/workspace-dashboard";
 import { requireWorkspaceAccess } from "@/lib/workspace-utils";
 
@@ -33,7 +33,13 @@ function WorkspaceLoading() {
   return (
     <div className="flex h-screen items-center justify-center">
       <div className="flex flex-col items-center gap-4">
-        <Spinner />
+        <Image
+          alt="Logo"
+          className="animate-pulse grayscale"
+          height={32}
+          src="/logo.svg"
+          width={32}
+        />
         <p className="font-[450] text-muted-foreground text-sm">
           Loading workspace
         </p>
@@ -50,6 +56,7 @@ export default function WorkspacePage({
   return (
     <Suspense fallback={<WorkspaceLoading />}>
       <WorkspaceContent params={params} />
+      <WorkspaceLoading />
     </Suspense>
   );
 }
