@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { session } from "@/db/schema";
 import { getSessionSafe } from "@/lib/auth-utils";
+import { safeError } from "@/lib/logger";
 
 function hashToken(token: string): string {
   return createHash("sha256").update(token).digest("hex").substring(0, 16);
@@ -73,9 +74,7 @@ export async function GET() {
       { status: 200 }
     );
   } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error";
-    console.error("Error fetching sessions:", errorMessage);
+    safeError("Error fetching sessions:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

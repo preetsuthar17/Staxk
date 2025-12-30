@@ -131,7 +131,7 @@
   .root {
     @apply isolate;
   }
-  button{
+  button {
     @apply cursor-pointer;
   }
 }

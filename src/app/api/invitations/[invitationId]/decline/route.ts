@@ -5,6 +5,7 @@ import { db } from "@/db";
 import { user, workspaceInvitation } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { safeError } from "@/lib/logger";
+import { checkRateLimit, createRateLimitKey } from "@/lib/rate-limit";
 
 export async function POST(
   _request: Request,
@@ -15,6 +16,33 @@ export async function POST(
 
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const rateLimitKey = createRateLimitKey(
+      session.user.id,
+      "invitation-decline"
+    );
+    const rateLimitResult = await checkRateLimit(rateLimitKey, {
+      window: 60,
+      max: 20,
+    });
+
+    if (!rateLimitResult.allowed) {
+      const retryAfter = Math.ceil(
+        (rateLimitResult.resetAt - Date.now()) / 1000
+      );
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        {
+          status: 429,
+          headers: {
+            "X-RateLimit-Limit": "20",
+            "X-RateLimit-Remaining": "0",
+            "X-RateLimit-Reset": rateLimitResult.resetAt.toString(),
+            "Retry-After": retryAfter.toString(),
+          },
+        }
+      );
     }
 
     const { invitationId } = await params;

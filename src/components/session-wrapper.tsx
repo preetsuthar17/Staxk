@@ -1,15 +1,18 @@
 "use client";
 
+import type { Session, User } from "better-auth";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
-import { SessionProvider } from "./session-provider";
 import { authClient } from "@/lib/auth-client";
+import { SessionProvider } from "./session-provider";
+
+type SessionData = {
+  session: Session;
+  user: User;
+} | null;
 
 export function SessionWrapper({ children }: { children: ReactNode }) {
-  const [initialSession, setInitialSession] = useState<
-    { session: any; user: any } | null
-  >(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [initialSession, setInitialSession] = useState<SessionData>(null);
 
   useEffect(() => {
     authClient
@@ -19,13 +22,12 @@ export function SessionWrapper({ children }: { children: ReactNode }) {
       })
       .catch(() => {
         setInitialSession(null);
-      })
-      .finally(() => {
-        setIsLoading(false);
       });
   }, []);
 
   return (
-    <SessionProvider initialSession={initialSession}>{children}</SessionProvider>
+    <SessionProvider initialSession={initialSession}>
+      {children}
+    </SessionProvider>
   );
 }

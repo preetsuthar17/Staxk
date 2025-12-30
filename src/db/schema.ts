@@ -7,6 +7,7 @@ import {
   pgTable,
   text,
   timestamp,
+  unique,
 } from "drizzle-orm/pg-core";
 
 export const user = pgTable(
@@ -191,7 +192,7 @@ export const workspaceMember = pgTable(
       table.workspaceId,
       table.createdAt
     ),
-    index("workspace_member_workspaceId_userId_idx").on(
+    unique("workspace_member_workspaceId_userId_unique").on(
       table.workspaceId,
       table.userId
     ),

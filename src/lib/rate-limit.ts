@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { rateLimit } from "@/db/schema";
 
@@ -21,67 +21,72 @@ export async function checkRateLimit(
   const now = Date.now();
   const windowMs = options.window * 1000;
 
-  const existing = await db
-    .select()
-    .from(rateLimit)
-    .where(eq(rateLimit.key, key))
-    .limit(1);
+  return await db.transaction(async (tx) => {
+    const existing = await tx
+      .select()
+      .from(rateLimit)
+      .where(eq(rateLimit.key, key))
+      .limit(1);
 
-  if (existing.length === 0) {
-    await db.insert(rateLimit).values({
-      id: randomUUID(),
-      key,
-      count: 1,
-      lastRequest: now,
-    });
+    if (existing.length === 0) {
+      await tx.insert(rateLimit).values({
+        id: randomUUID(),
+        key,
+        count: 1,
+        lastRequest: now,
+      });
 
-    return {
-      allowed: true,
-      remaining: options.max - 1,
-      resetAt: now + windowMs,
-    };
-  }
+      return {
+        allowed: true,
+        remaining: options.max - 1,
+        resetAt: now + windowMs,
+      };
+    }
 
-  const record = existing[0];
-  const timeSinceLastRequest = now - record.lastRequest;
+    const record = existing[0];
+    const timeSinceLastRequest = now - record.lastRequest;
 
-  if (timeSinceLastRequest > windowMs) {
-    await db
+    // Window expired - reset the counter
+    if (timeSinceLastRequest > windowMs) {
+      await tx
+        .update(rateLimit)
+        .set({
+          count: 1,
+          lastRequest: now,
+        })
+        .where(eq(rateLimit.key, key));
+
+      return {
+        allowed: true,
+        remaining: options.max - 1,
+        resetAt: now + windowMs,
+      };
+    }
+
+    // Check if limit exceeded
+    if (record.count >= options.max) {
+      return {
+        allowed: false,
+        remaining: 0,
+        resetAt: record.lastRequest + windowMs,
+      };
+    }
+
+    // Increment counter atomically using SQL to prevent race conditions
+    await tx
       .update(rateLimit)
       .set({
-        count: 1,
+        count: sql`${rateLimit.count} + 1`,
         lastRequest: now,
       })
       .where(eq(rateLimit.key, key));
 
     return {
       allowed: true,
-      remaining: options.max - 1,
-      resetAt: now + windowMs,
-    };
-  }
-
-  if (record.count >= options.max) {
-    return {
-      allowed: false,
-      remaining: 0,
+      remaining: options.max - (record.count + 1),
       resetAt: record.lastRequest + windowMs,
     };
-  }
-
-  await db
-    .update(rateLimit)
-    .set({
-      count: record.count + 1,
-      lastRequest: now,
-    })
-    .where(eq(rateLimit.key, key));
-
-  return {
-    allowed: true,
-    remaining: options.max - (record.count + 1),
-    resetAt: record.lastRequest + windowMs,
-  };
+  });
 }
 
 export function createRateLimitKey(userId: string, endpoint: string): string {

@@ -13,7 +13,7 @@ export default function GlobalError({
         <div className="flex min-h-screen items-center justify-center bg-background">
           <div className="flex flex-col items-center gap-6 text-center">
             <div className="flex flex-col gap-2">
-              <h1 className="text-6xl font-bold tracking-tighter">
+              <h1 className="font-bold text-6xl tracking-tighter">
                 Something went wrong
               </h1>
               <p className="text-muted-foreground">
@@ -21,9 +21,9 @@ export default function GlobalError({
               </p>
             </div>
             <button
-              type="button"
-              onClick={() => reset()}
               className="rounded-md bg-primary px-4 py-2 text-primary-foreground transition-colors hover:bg-primary/90"
+              onClick={() => reset()}
+              type="button"
             >
               Try again
             </button>
@@ -33,4 +33,3 @@ export default function GlobalError({
     </html>
   );
 }
-

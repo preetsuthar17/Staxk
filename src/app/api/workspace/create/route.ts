@@ -148,28 +148,30 @@ export async function POST(request: Request) {
     const workspaceId = crypto.randomUUID();
     const memberId = crypto.randomUUID();
 
-    await db.insert(workspace).values({
-      id: workspaceId,
-      name: sanitizedName,
-      slug: normalizedSlug,
-      description: sanitizedDescription,
-      timezone: "UTC",
-      ownerId: session.user.id,
-    });
+    await db.transaction(async (tx) => {
+      await tx.insert(workspace).values({
+        id: workspaceId,
+        name: sanitizedName,
+        slug: normalizedSlug,
+        description: sanitizedDescription,
+        timezone: "UTC",
+        ownerId: session.user.id,
+      });
 
-    await db.insert(workspaceMember).values({
-      id: memberId,
-      workspaceId,
-      userId: session.user.id,
-      role: "owner",
-    });
+      await tx.insert(workspaceMember).values({
+        id: memberId,
+        workspaceId,
+        userId: session.user.id,
+        role: "owner",
+      });
 
-    if (isOnboarding) {
-      await db
-        .update(user)
-        .set({ isOnboarded: true })
-        .where(eq(user.id, session.user.id));
-    }
+      if (isOnboarding) {
+        await tx
+          .update(user)
+          .set({ isOnboarded: true })
+          .where(eq(user.id, session.user.id));
+      }
+    });
 
     return NextResponse.json({
       id: workspaceId,
