@@ -2,7 +2,11 @@
 
 import { IconBug, IconHelpCircle, IconSettings } from "@tabler/icons-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { NavMenu } from "./nav-menu";
+import {
+  type NavItem,
+  SidebarFooter as SidebarFooterContainer,
+  SidebarNavMenu,
+} from "@/components/ui/sidebar";
 import { LoadingUserProfile, UserProfile } from "./user-profile";
 import { getWorkspaceSlug } from "./utils";
 
@@ -36,7 +40,7 @@ export function SidebarFooter({
     ? `/${workspaceSlug}/settings/general`
     : "/settings";
 
-  const bottomNavItems = [
+  const bottomNavItems: NavItem[] = [
     {
       href: workspaceSettingsHref,
       icon: IconSettings,
@@ -95,8 +99,8 @@ export function SidebarFooter({
   };
 
   return (
-    <div className="flex flex-col gap-4 p-4">
-      <NavMenu
+    <SidebarFooterContainer>
+      <SidebarNavMenu
         items={bottomNavItems}
         pathname={pathname}
         workspaceSlug={workspaceSlug}
@@ -106,6 +110,6 @@ export function SidebarFooter({
           {renderUserProfile()}
         </div>
       </div>
-    </div>
+    </SidebarFooterContainer>
   );
 }

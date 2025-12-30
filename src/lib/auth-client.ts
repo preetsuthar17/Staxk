@@ -38,6 +38,13 @@ export const authClient = createAuthClient({
       }
     },
   },
+  session: {
+    fetchOnWindowFocus: false,
+    refetchInterval: 0,
+    refetchOnMount: false,
+    staleTime: 15 * 60 * 1000,
+    cacheTime: 60 * 60 * 1000,
+  },
 });
 
 export const {

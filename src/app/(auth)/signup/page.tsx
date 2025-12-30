@@ -10,20 +10,15 @@ export default function SignupPage() {
   const router = useRouter();
   const { data: session, isPending } = useSession();
   const hasRedirected = useRef(false);
-  const initialLoadComplete = useRef(false);
 
   useEffect(() => {
-    if (!isPending) {
-      initialLoadComplete.current = true;
-    }
-    if (!isPending && session && !hasRedirected.current) {
+    if (session && !hasRedirected.current && !isPending) {
       hasRedirected.current = true;
-      router.push("/");
-      router.refresh();
+      router.replace("/");
     }
   }, [session, isPending, router]);
 
-  if (isPending && !initialLoadComplete.current) {
+  if (isPending && !session) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background px-4">
         <Spinner />

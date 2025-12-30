@@ -1,12 +1,22 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  reactStrictMode: true,
+  poweredByHeader: false,
+  compress: true,
   images: {
     remotePatterns: [
       {
         protocol: "https",
         hostname: "api.dicebear.com",
       },
+    ],
+  },
+  experimental: {
+    optimizePackageImports: [
+      "@tabler/icons-react",
+      "sonner",
+      "react-hook-form",
     ],
   },
   async headers() {

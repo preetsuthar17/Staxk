@@ -2,9 +2,10 @@
 
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Sidebar, SidebarHeader } from "@/components/ui/sidebar";
 import { useSession } from "@/lib/auth-client";
-import { SidebarContent } from "./sidebar-content";
-import { SidebarFooter } from "./sidebar-footer";
+import { SidebarContent as DashboardSidebarContent } from "./sidebar-content";
+import { SidebarFooter as DashboardSidebarFooter } from "./sidebar-footer";
 import { getDicebearUrl, getRandomSeed, getUsername } from "./types";
 import { getWorkspaceSlug } from "./utils";
 import { WorkspaceSelector } from "./workspace-selector";
@@ -37,16 +38,17 @@ export function DashboardSidebar() {
   const workspaceSlug = getWorkspaceSlug(pathname);
 
   return (
-    <aside
-      className={`flex h-screen w-64 flex-col justify-between bg-sidebar ${
-        isPending ? "pointer-events-none cursor-not-allowed" : ""
-      }`}
-    >
+    <Sidebar className="justify-between" disabled={isPending}>
       <div className="flex flex-col -space-y-4">
-        <WorkspaceSelector pathname={pathname} />
-        <SidebarContent pathname={pathname} workspaceSlug={workspaceSlug} />
+        <SidebarHeader>
+          <WorkspaceSelector pathname={pathname} />
+        </SidebarHeader>
+        <DashboardSidebarContent
+          pathname={pathname}
+          workspaceSlug={workspaceSlug}
+        />
       </div>
-      <SidebarFooter
+      <DashboardSidebarFooter
         dicebearUrl={dicebearUrl}
         fallbackUrl={randomFallbackUrl}
         isPending={isPending}
@@ -56,6 +58,6 @@ export function DashboardSidebar() {
         user={user || null}
         username={username}
       />
-    </aside>
+    </Sidebar>
   );
 }

@@ -15,7 +15,7 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
-import { Spinner } from "@/components/ui/spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { changePassword } from "@/lib/auth-client";
 import { safeClientError } from "@/lib/client-logger";
 
@@ -229,7 +229,7 @@ export function ChangePassword() {
           <div className="flex items-center justify-end">
             <Button className="h-9" disabled={isSubmitting} type="submit">
               {isSubmitting ? (
-                <Spinner className="size-4" />
+                <Skeleton className="h-4 w-32" />
               ) : (
                 "Change password"
               )}

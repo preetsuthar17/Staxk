@@ -1,12 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  IconCircleCheck,
-  IconLoader2,
-  IconPencil,
-  IconX,
-} from "@tabler/icons-react";
+import { IconCircleCheck, IconPencil, IconX } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -559,12 +554,7 @@ export function ProfileSettings() {
               <Label className="pb-2 font-medium text-sm" htmlFor="name">
                 Full name
               </Label>
-              {saveStatus === "saving" && (
-                <IconLoader2
-                  aria-hidden="true"
-                  className="mb-2 size-3.5 animate-spin text-muted-foreground"
-                />
-              )}
+              {saveStatus === "saving" && <Spinner className="size-4" />}
               {saveStatus === "saved" && (
                 <IconCircleCheck
                   aria-hidden="true"

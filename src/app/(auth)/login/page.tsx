@@ -12,22 +12,17 @@ function LoginContent() {
   const searchParams = useSearchParams();
   const { data: session, isPending } = useSession();
   const hasRedirected = useRef(false);
-  const initialLoadComplete = useRef(false);
 
   const is2FAVerify = searchParams.get("verify") === "2fa";
 
   useEffect(() => {
-    if (!isPending) {
-      initialLoadComplete.current = true;
-    }
-    if (!isPending && session && !hasRedirected.current) {
+    if (session && !hasRedirected.current && !isPending) {
       hasRedirected.current = true;
-      router.push("/");
-      router.refresh();
+      router.replace("/");
     }
   }, [session, isPending, router]);
 
-  if (isPending && !initialLoadComplete.current) {
+  if (isPending && !session) {
     return <Spinner />;
   }
 

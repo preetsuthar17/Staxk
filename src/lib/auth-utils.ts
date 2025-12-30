@@ -1,8 +1,9 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { cache } from "react";
 import { auth } from "./auth";
 
-export async function getSessionSafe() {
+export const getSessionSafe = cache(async () => {
   try {
     const session = await auth.api.getSession({
       headers: await headers(),
@@ -30,9 +31,9 @@ export async function getSessionSafe() {
 
     return null;
   }
-}
+});
 
-export async function requireSession(redirectTo = "/home") {
+export async function requireSession(redirectTo = "/login") {
   const session = await getSessionSafe();
 
   if (!session) {
@@ -44,7 +45,7 @@ export async function requireSession(redirectTo = "/home") {
 
 export async function requireSessionForUser(
   userId: string,
-  redirectTo = "/home"
+  redirectTo = "/login"
 ) {
   const session = await requireSession(redirectTo);
 

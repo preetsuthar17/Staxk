@@ -1,8 +1,12 @@
 "use client";
 
 import { IconHome, IconInbox } from "@tabler/icons-react";
+import {
+  type NavItem,
+  SidebarContent as SidebarContentContainer,
+  SidebarNavMenu,
+} from "@/components/ui/sidebar";
 import { useInvitationsCount } from "@/hooks/use-invitations-count";
-import { NavMenu } from "./nav-menu";
 
 interface SidebarContentProps {
   pathname: string;
@@ -15,7 +19,7 @@ export function SidebarContent({
 }: SidebarContentProps) {
   const { count: invitationCount } = useInvitationsCount();
 
-  const mainNavItems = [
+  const mainNavItems: NavItem[] = [
     { href: "/", icon: IconHome, label: "Home" },
     {
       href: "/inbox",
@@ -27,8 +31,8 @@ export function SidebarContent({
   ];
 
   return (
-    <div className="flex flex-col gap-4 p-4">
-      <NavMenu
+    <SidebarContentContainer>
+      <SidebarNavMenu
         items={mainNavItems}
         pathname={pathname}
         workspaceSlug={workspaceSlug}
@@ -112,6 +116,6 @@ export function SidebarContent({
           </NavLink>
         </ProjectItem>
       </CollapsibleGroup> */}
-    </div>
+    </SidebarContentContainer>
   );
 }

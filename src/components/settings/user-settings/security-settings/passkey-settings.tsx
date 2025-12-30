@@ -37,7 +37,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Spinner } from "@/components/ui/spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { authClient } from "@/lib/auth-client";
 import { safeClientError } from "@/lib/client-logger";
 
@@ -221,7 +221,7 @@ function AddPasskeyDialog({
             Cancel
           </Button>
           <Button disabled={isLoading} onClick={handleAdd} type="button">
-            {isLoading ? <Spinner className="size-4" /> : "Add passkey"}
+            {isLoading ? <Skeleton className="h-4 w-24" /> : "Add passkey"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -319,7 +319,7 @@ function RenamePasskeyDialog({
               Cancel
             </Button>
             <Button disabled={isLoading} type="submit">
-              {isLoading ? <Spinner className="size-4" /> : "Save"}
+              {isLoading ? <Skeleton className="h-4 w-12" /> : "Save"}
             </Button>
           </DialogFooter>
         </form>
@@ -385,7 +385,7 @@ function DeletePasskeyDialog({
             disabled={isLoading}
             onClick={handleDelete}
           >
-            {isLoading ? <Spinner className="size-4" /> : "Delete"}
+            {isLoading ? <Skeleton className="h-4 w-16" /> : "Delete"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
@@ -454,8 +454,18 @@ export function PasskeySettings() {
       </p>
 
       {isLoading ? (
-        <div className="flex w-full items-center justify-center py-8">
-          <Spinner className="size-6" />
+        <div className="flex w-full flex-col gap-3">
+          <div className="flex items-center justify-between rounded-lg border p-4">
+            <div className="flex items-center gap-4">
+              <Skeleton className="size-10 rounded-full" />
+              <div className="flex flex-col gap-2">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-3 w-24" />
+              </div>
+            </div>
+            <Skeleton className="size-8" />
+          </div>
+          <Skeleton className="h-10 w-full" />
         </div>
       ) : (
         <div className="flex w-full flex-col gap-3">

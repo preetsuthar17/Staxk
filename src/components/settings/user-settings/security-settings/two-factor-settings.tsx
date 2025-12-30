@@ -33,7 +33,7 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
-import { Spinner } from "@/components/ui/spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { authClient, useSession } from "@/lib/auth-client";
 
 const passwordSchema = z.object({
@@ -96,11 +96,7 @@ function QRCodeDisplay({ totpUri }: { totpUri: string }) {
   }, [totpUri]);
 
   if (!qrDataUrl) {
-    return (
-      <div className="flex h-[200px] w-[200px] items-center justify-center">
-        <Spinner />
-      </div>
-    );
+    return <Skeleton className="h-[200px] w-[200px] rounded-lg" />;
   }
 
   return (
@@ -211,7 +207,7 @@ function PasswordStep({
       </div>
       <DialogFooter>
         <Button disabled={isLoading} type="submit">
-          {isLoading ? <Spinner className="size-4" /> : "Continue"}
+          {isLoading ? <Skeleton className="h-4 w-16" /> : "Continue"}
         </Button>
       </DialogFooter>
     </form>
@@ -282,7 +278,7 @@ function VerifyStep({
           Back
         </Button>
         <Button disabled={isLoading} type="submit">
-          {isLoading ? <Spinner className="size-4" /> : "Verify"}
+          {isLoading ? <Skeleton className="h-4 w-12" /> : "Verify"}
         </Button>
       </DialogFooter>
     </form>
@@ -563,7 +559,7 @@ function DisableTwoFactorDialog({
               Cancel
             </Button>
             <Button disabled={isLoading} type="submit" variant="destructive">
-              {isLoading ? <Spinner className="size-4" /> : "Disable 2FA"}
+              {isLoading ? <Skeleton className="h-4 w-20" /> : "Disable 2FA"}
             </Button>
           </DialogFooter>
         </form>
@@ -683,7 +679,7 @@ function RegenerateBackupCodesDialog({
                 Cancel
               </Button>
               <Button disabled={isLoading} type="submit">
-                {isLoading ? <Spinner className="size-4" /> : "Generate"}
+                {isLoading ? <Skeleton className="h-4 w-16" /> : "Generate"}
               </Button>
             </DialogFooter>
           </form>
@@ -722,8 +718,16 @@ export function TwoFactorSettings() {
 
   if (isPending) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <Spinner className="size-6" />
+      <div className="flex w-full flex-col items-start gap-6">
+        <div className="flex w-full items-center justify-between">
+          <Skeleton className="h-6 w-48" />
+          <Skeleton className="h-5 w-20" />
+        </div>
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-3/4" />
+        <div className="flex w-full flex-wrap gap-3">
+          <Skeleton className="h-10 w-32" />
+        </div>
       </div>
     );
   }

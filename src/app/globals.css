@@ -93,7 +93,6 @@
   --color-ring: var(--ring);
   --radius: var(--radius);
   --font-sans: var(--font-geist-sans);
-  --font-inter: var(--font-inter);
   --font-mono: var(--font-geist-mono);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -132,6 +131,9 @@
   .root {
     @apply isolate;
   }
+}
+main {
+  scrollbar-gutter: stable;
 }
 
 @layer utilities {

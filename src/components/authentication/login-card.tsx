@@ -111,7 +111,7 @@ function PasswordFieldSection({
           />
           <InputGroupButton
             aria-label={showPassword ? "Hide password" : "Show password"}
-            className="h-9.5 w-9.5 rounded-sm"
+            className="-mt-0.5 h-9.5 w-9.5 rounded-sm"
             onClick={onShowPasswordToggle}
             tabIndex={-1}
             type="button"

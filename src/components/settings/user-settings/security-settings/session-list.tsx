@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Spinner } from "@/components/ui/spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Tooltip,
   TooltipContent,
@@ -143,26 +143,16 @@ function formatDate(dateString: string): string {
   });
 }
 
-function formatFullDate(dateString: string): string {
-  const date = new Date(dateString);
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
-}
-
 function SessionItemSkeleton({ isCurrent = false }: { isCurrent?: boolean }) {
   return (
     <div
-      className={`flex items-center justify-between rounded-md border border-border ${
-        isCurrent ? "bg-muted/30" : ""
-      } p-3 px-4`}
+      className={`flex items-center justify-between rounded-md border border-border ${isCurrent ? "bg-muted/30" : ""
+        } p-3 px-4`}
     >
       <div className="flex flex-1 items-start gap-4">
-        <div className="mt-0.5 size-5 animate-pulse rounded bg-muted" />
+        <div className="flex items-center justify-center bg-white p-2 rounded">
+          <div className="mt-0.5 size-5 animate-pulse rounded bg-muted" />
+        </div>
         <div className="flex flex-1 flex-col gap-1.5">
           <div className="flex items-center gap-2">
             <div className="h-4 w-24 animate-pulse rounded bg-muted" />
@@ -172,8 +162,6 @@ function SessionItemSkeleton({ isCurrent = false }: { isCurrent?: boolean }) {
           </div>
           <div className="flex flex-col gap-0.5">
             <div className="h-3 w-32 animate-pulse rounded bg-muted" />
-            <div className="h-3 w-40 animate-pulse rounded bg-muted" />
-            <div className="h-3 w-36 animate-pulse rounded bg-muted" />
           </div>
         </div>
       </div>
@@ -283,7 +271,9 @@ export function SessionList() {
               <div className="flex w-full flex-col gap-2">
                 <div className="flex items-center justify-between rounded-md border border-border bg-muted/30 p-3 px-4">
                   <div className="flex flex-1 items-start gap-4">
-                    <Icon className="mt-0.5 size-5 text-muted-foreground" />
+                    <div className="flex items-center justify-center bg-white p-2 rounded">
+                      <Icon className="mt-0.5 size-5 text-muted-foreground" />
+                    </div>
                     <div className="flex flex-1 flex-col gap-1.5">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="font-medium text-sm">
@@ -295,23 +285,11 @@ export function SessionList() {
                       </div>
                       <div className="flex flex-col gap-0.5 text-muted-foreground text-xs">
                         <span>
-                          {deviceInfo.browser} • {deviceInfo.os}
-                        </span>
-                        <span className="flex items-center gap-2">
-                          <span>
-                            {currentSession.ipAddress || "Unknown IP"}
-                          </span>
-                          <span>•</span>
-                          <span>
-                            Last active:{" "}
-                            {formatDate(
-                              currentSession.updatedAt ||
-                                currentSession.createdAt
-                            )}
-                          </span>
-                        </span>
-                        <span className="text-muted-foreground/80">
-                          Created: {formatFullDate(currentSession.createdAt)}
+                          {deviceInfo.os}
+                          <span className="mx-2">•</span>
+                          {formatDate(
+                            currentSession.updatedAt || currentSession.createdAt
+                          )}
                         </span>
                       </div>
                     </div>
@@ -365,18 +343,9 @@ export function SessionList() {
                       </span>
                       <div className="flex flex-col gap-0.5 text-muted-foreground text-xs">
                         <span>
-                          {deviceInfo.browser} • {deviceInfo.os}
-                        </span>
-                        <span className="flex items-center gap-2">
-                          <span>{session.ipAddress || "Unknown IP"}</span>
-                          <span>•</span>
-                          <span>
-                            Last active:{" "}
-                            {formatDate(session.updatedAt || session.createdAt)}
-                          </span>
-                        </span>
-                        <span className="text-muted-foreground/80">
-                          Created: {formatFullDate(session.createdAt)}
+                          {deviceInfo.os}
+                          <span className="mx-2">•</span>
+                          {formatDate(session.updatedAt || session.createdAt)}
                         </span>
                       </div>
                     </div>
@@ -395,7 +364,7 @@ export function SessionList() {
                             variant="destructive"
                           >
                             {revokingSessionId === session.id ? (
-                              <Spinner className="size-3" />
+                              <Skeleton className="h-3 w-3 rounded" />
                             ) : (
                               <IconLogout className="size-4" />
                             )}
