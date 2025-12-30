@@ -82,17 +82,12 @@ async function WorkspaceSettingsLayoutContent({
     notFound();
   }
 
-  return (
-    <div className="flex h-screen overflow-hidden bg-background">
-      <WorkspaceSettingsSidebar workspaceSlug={workspaceSlug} />
-      <main className="flex-1 overflow-y-auto">{children}</main>
-    </div>
-  );
+  return <>{children}</>;
 }
 
-function WorkspaceSettingsLoading() {
+function WorkspaceSettingsContentLoading() {
   return (
-    <div className="flex h-screen items-center justify-center">
+    <div className="flex h-full items-center justify-center">
       <div className="flex flex-col items-center gap-4">
         <Image
           alt="Logo"
@@ -109,18 +104,25 @@ function WorkspaceSettingsLoading() {
   );
 }
 
-export default function WorkspaceSettingsLayout({
+export default async function WorkspaceSettingsLayout({
   children,
   params,
 }: {
   children: React.ReactNode;
   params: Promise<{ workspaceSlug: string }>;
 }) {
+  const { workspaceSlug } = await params;
+
   return (
-    <Suspense fallback={<WorkspaceSettingsLoading />}>
-      <WorkspaceSettingsLayoutContent params={params}>
-        {children}
-      </WorkspaceSettingsLayoutContent>
-    </Suspense>
+    <div className="flex h-screen overflow-hidden bg-background">
+      <WorkspaceSettingsSidebar workspaceSlug={workspaceSlug} />
+      <main className="flex-1 overflow-y-auto">
+        <Suspense fallback={<WorkspaceSettingsContentLoading />}>
+          <WorkspaceSettingsLayoutContent params={params}>
+            {children}
+          </WorkspaceSettingsLayoutContent>
+        </Suspense>
+      </main>
+    </div>
   );
 }

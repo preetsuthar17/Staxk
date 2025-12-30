@@ -56,7 +56,6 @@ export default function WorkspacePage({
   return (
     <Suspense fallback={<WorkspaceLoading />}>
       <WorkspaceContent params={params} />
-      <WorkspaceLoading />
     </Suspense>
   );
 }

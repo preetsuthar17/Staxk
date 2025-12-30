@@ -3,24 +3,9 @@ import { Suspense } from "react";
 import { SettingsSidebar } from "@/components/settings/user-settings/settings-sidebar";
 import { requireSession } from "@/lib/auth-utils";
 
-async function SettingsLayoutContent({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  await requireSession();
-
+function SettingsContentLoading() {
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
-      <SettingsSidebar />
-      <main className="flex-1 overflow-y-auto">{children}</main>
-    </div>
-  );
-}
-
-function SettingsLoading() {
-  return (
-    <div className="flex h-screen items-center justify-center">
+    <div className="flex h-full items-center justify-center">
       <div className="flex flex-col items-center gap-4">
         <Image
           alt="Logo"
@@ -37,14 +22,19 @@ function SettingsLoading() {
   );
 }
 
-export default function SettingsLayout({
+export default async function SettingsLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  await requireSession();
+
   return (
-    <Suspense fallback={<SettingsLoading />}>
-      <SettingsLayoutContent>{children}</SettingsLayoutContent>
-    </Suspense>
+    <div className="flex h-screen overflow-hidden bg-background">
+      <SettingsSidebar />
+      <main className="flex-1 overflow-y-auto">
+        <Suspense fallback={<SettingsContentLoading />}>{children}</Suspense>
+      </main>
+    </div>
   );
 }
