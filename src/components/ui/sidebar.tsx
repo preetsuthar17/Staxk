@@ -12,10 +12,6 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-// ============================================================================
-// Sidebar Container
-// ============================================================================
-
 interface SidebarProps {
   children: ReactNode;
   className?: string;
@@ -39,10 +35,6 @@ export function Sidebar({
     </aside>
   );
 }
-
-// ============================================================================
-// Sidebar Sections
-// ============================================================================
 
 interface SidebarHeaderProps {
   children: ReactNode;
@@ -74,10 +66,6 @@ export function SidebarFooter({ children, className }: SidebarFooterProps) {
     <div className={cn("flex flex-col gap-4 p-4", className)}>{children}</div>
   );
 }
-
-// ============================================================================
-// Navigation Components
-// ============================================================================
 
 export interface NavItem {
   href: string;
@@ -112,7 +100,7 @@ export function SidebarNavLink({
       <Link
         aria-label={`${children} ${notificationCount > 0 ? `(${notificationCount})` : ""}`}
         className={cn(
-          "flex items-center gap-2.5 rounded-md px-2 py-1.5 font-[450] text-[13px] transition-colors",
+          "flex items-center gap-2.5 rounded-md px-2 py-1.5 font-[480] text-[13.5px] transition-colors",
           isActive
             ? "bg-sidebar-accent text-sidebar-accent-foreground"
             : "hover:bg-sidebar-accent",
@@ -142,7 +130,6 @@ interface SidebarNavMenuProps {
   className?: string;
 }
 
-// Utility functions for workspace-aware routing
 function getWorkspaceSlug(pathname: string): string | null {
   const segments = pathname.split("/").filter(Boolean);
   if (
@@ -242,10 +229,6 @@ export function SidebarNavMenu({
   );
 }
 
-// ============================================================================
-// Collapsible Group
-// ============================================================================
-
 interface CollapsibleContentProps {
   children: ReactNode;
   isOpen: boolean;
@@ -292,10 +275,6 @@ export function SidebarCollapsibleGroup({
     </div>
   );
 }
-
-// ============================================================================
-// Back Button
-// ============================================================================
 
 interface SidebarBackButtonProps {
   onClick: () => void;

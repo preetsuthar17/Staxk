@@ -6,13 +6,10 @@ export interface TimezoneOption {
   group: string;
 }
 
-// Regex patterns for timezone parsing
 const OFFSET_REGEX = /UTC([+-])(\d{1,2}):?(\d{2})?/;
 const OFFSET_CLEANUP_REGEX = /\s*\(UTC[^)]+\)/;
 
-// Curated list of commonly used timezones
 const COMMON_TIMEZONES = [
-  // Americas
   "America/New_York",
   "America/Chicago",
   "America/Denver",
@@ -24,8 +21,6 @@ const COMMON_TIMEZONES = [
   "America/Mexico_City",
   "America/Sao_Paulo",
   "America/Buenos_Aires",
-
-  // Europe
   "Europe/London",
   "Europe/Paris",
   "Europe/Berlin",
@@ -38,8 +33,6 @@ const COMMON_TIMEZONES = [
   "Europe/Warsaw",
   "Europe/Moscow",
   "Europe/Istanbul",
-
-  // Asia
   "Asia/Dubai",
   "Asia/Karachi",
   "Asia/Kolkata",
@@ -50,16 +43,12 @@ const COMMON_TIMEZONES = [
   "Asia/Shanghai",
   "Asia/Tokyo",
   "Asia/Seoul",
-
-  // Pacific
   "Australia/Sydney",
   "Australia/Melbourne",
   "Australia/Brisbane",
   "Australia/Perth",
   "Pacific/Auckland",
   "Pacific/Fiji",
-
-  // Africa
   "Africa/Cairo",
   "Africa/Johannesburg",
   "Africa/Nairobi",
@@ -69,7 +58,6 @@ const COMMON_TIMEZONES = [
 export function getTimezoneOptions(): TimezoneOption[] {
   const timezones: TimezoneOption[] = [];
 
-  // Always include UTC first
   timezones.push({
     value: "UTC",
     label: "UTC (Coordinated Universal Time)",
@@ -93,7 +81,6 @@ export function getTimezoneOptions(): TimezoneOption[] {
     });
   }
 
-  // Sort by offset, then by label
   return timezones.sort((a, b) => {
     if (a.value === "UTC") {
       return -1;
@@ -112,7 +99,6 @@ export function getTimezoneOptions(): TimezoneOption[] {
 function formatTimezoneLabel(timezone: string): string {
   const parts = timezone.split("/");
 
-  // Get city name and format it
   const city =
     parts
       .at(-1)
@@ -120,7 +106,6 @@ function formatTimezoneLabel(timezone: string): string {
       .replace(/([A-Z])/g, " $1")
       .trim() || timezone;
 
-  // Get region
   const region = parts[0];
 
   return `${city} (${region})`;
@@ -146,7 +131,6 @@ export function getTimezoneOffset(timezone: string): {
       return { offset, offsetMinutes };
     }
 
-    // Fallback method
     const utcDate = new Date(now.toLocaleString("en-US", { timeZone: "UTC" }));
     const tzDate = new Date(
       now.toLocaleString("en-US", { timeZone: timezone })
@@ -225,7 +209,6 @@ export function getDefaultTimezone(): string {
   }
 }
 
-// Search/filter helper
 export function searchTimezones(query: string): TimezoneOption[] {
   const options = getTimezoneOptions();
   const lowerQuery = query.toLowerCase();

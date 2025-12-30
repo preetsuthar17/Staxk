@@ -42,7 +42,7 @@ export function DashboardSidebar() {
         const parsed = JSON.parse(cached) as CachedUserData;
         setCachedUser(parsed);
       } catch {
-        // Invalid cache, ignore
+        // Invalid cache, ignore it
       }
     }
     setRandomFallbackSeed(getRandomSeed());

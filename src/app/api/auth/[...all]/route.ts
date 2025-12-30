@@ -2,6 +2,8 @@ import { toNextJsHandler } from "better-auth/next-js";
 import type { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 
+export const maxDuration = 30;
+
 const authHandler = toNextJsHandler(auth);
 
 async function handleAuthRequest(

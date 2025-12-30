@@ -80,7 +80,6 @@ export default async function DangerZonePage({
     notFound();
   }
 
-  // Only owners can access the danger zone
   if (workspaceData.ownerId !== session.user.id) {
     notFound();
   }

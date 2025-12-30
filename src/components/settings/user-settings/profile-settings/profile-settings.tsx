@@ -25,9 +25,6 @@ import { UsernameInput, useUsernameAvailability } from "./username-input";
 const USERNAME_STARTS_WITH_LETTER_REGEX = /^[a-z]/i;
 const USERNAME_ALPHANUMERIC_UNDERSCORE_REGEX = /^[a-z0-9_]+$/;
 
-/**
- * Validates username format
- */
 function validateUsernameFormat(username: string): {
   valid: boolean;
   error?: string;
@@ -230,7 +227,7 @@ function ProfileSettingsLoading() {
           <div className="flex w-full flex-col items-start gap-2">
             <Label className="font-medium text-sm">Full name</Label>
             <div className="h-9 w-full animate-pulse rounded-md bg-muted" />
-            <p className="mt-2 text-muted-foreground text-xs">
+            <p className="mt-1 text-muted-foreground text-xs">
               Changes save automatically
             </p>
           </div>
@@ -489,22 +486,38 @@ export function ProfileSettings() {
 
   const saveUsernameUpdate = useCallback(
     async (trimmedUsername: string) => {
-      const { error } = await updateUser({
-        username: trimmedUsername,
-      });
+      try {
+        const { error } = await updateUser({
+          username: trimmedUsername,
+        });
 
-      if (error) {
-        throw new Error(error.message || "Failed to update username");
+        if (error) {
+          throw new Error(error.message || "Failed to update username");
+        }
+
+        setUsername(trimmedUsername);
+        setValue("username", trimmedUsername, { shouldValidate: false });
+        setIsEditingUsername(false);
+        setUsernameEditValue("");
+        toast.success("Username updated successfully");
+        router.refresh();
+        await handleRefetch();
+        refreshUsernameFromSession();
+      } catch (error) {
+        if (error instanceof Error) {
+          if (
+            error.message.includes("Failed to fetch") ||
+            error.message.includes("NetworkError") ||
+            error.message.includes("Network request failed")
+          ) {
+            throw new Error(
+              "Network error. Please check your connection and try again."
+            );
+          }
+          throw error;
+        }
+        throw new Error("Failed to update username. Please try again.");
       }
-
-      setUsername(trimmedUsername);
-      setValue("username", trimmedUsername, { shouldValidate: false });
-      setIsEditingUsername(false);
-      setUsernameEditValue("");
-      toast.success("Username updated successfully");
-      router.refresh();
-      await handleRefetch();
-      refreshUsernameFromSession();
     },
     [router, setValue, handleRefetch, refreshUsernameFromSession]
   );

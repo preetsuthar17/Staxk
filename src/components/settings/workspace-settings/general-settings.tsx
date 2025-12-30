@@ -16,7 +16,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { TimezoneSelector } from "@/components/ui/timezone-selector";
 import {
@@ -145,7 +144,7 @@ function SlugSection({
       <Label className="font-medium text-sm" htmlFor="slug">
         Workspace URL
       </Label>
-      <div className="flex w-full flex-col gap-6">
+      <div className="flex w-full flex-col">
         {isEditingSlug ? (
           <>
             <div className="flex flex-col gap-1">
@@ -221,10 +220,11 @@ function SlugSection({
                           slugEditValue.trim().toLowerCase() ===
                             slug.toLowerCase()
                         }
+                        loading={isSavingSlug}
                         onClick={onSave}
                         type="button"
                       >
-                        {isSavingSlug ? <Spinner className="size-4" /> : "Save"}
+                        Save
                       </Button>
                     </div>
                   )}
@@ -811,14 +811,44 @@ export function GeneralSettings({ workspace }: GeneralSettingsProps) {
     setIsInitialized(true);
   }, []);
 
+  const lastCheckedSlugRef = useRef<string | null>(null);
+  const checkTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
+    if (checkTimeoutRef.current) {
+      clearTimeout(checkTimeoutRef.current);
+      checkTimeoutRef.current = null;
+    }
+
     if (isEditingSlug && slugEditValue !== workspace.slug) {
-      const timer = setTimeout(() => {
+      if (
+        slugAvailability.checking ||
+        lastCheckedSlugRef.current === slugEditValue
+      ) {
+        return;
+      }
+
+      checkTimeoutRef.current = setTimeout(() => {
+        lastCheckedSlugRef.current = slugEditValue;
         slugAvailability.checkAvailability(slugEditValue, workspace.slug);
       }, 300);
-      return () => clearTimeout(timer);
+    } else {
+      lastCheckedSlugRef.current = null;
     }
-  }, [slugEditValue, workspace.slug, isEditingSlug, slugAvailability]);
+
+    return () => {
+      if (checkTimeoutRef.current) {
+        clearTimeout(checkTimeoutRef.current);
+        checkTimeoutRef.current = null;
+      }
+    };
+  }, [
+    slugEditValue,
+    workspace.slug,
+    isEditingSlug,
+    slugAvailability.checkAvailability,
+    slugAvailability.checking,
+  ]);
 
   const handleNameChange = useCallback(
     (currentName: string, sessionName: string) => {

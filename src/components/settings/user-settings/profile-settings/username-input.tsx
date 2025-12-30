@@ -10,14 +10,6 @@ const CACHE_DURATION = 5 * 60 * 1000;
 const USERNAME_STARTS_WITH_LETTER_REGEX = /^[a-z]/i;
 const USERNAME_ALPHANUMERIC_UNDERSCORE_REGEX = /^[a-z0-9_]+$/;
 
-/**
- * Validates username format
- * Rules:
- * - 3-30 characters
- * - Only lowercase letters, numbers, and underscores
- * - Must start with a letter
- * - Cannot end with underscore
- */
 function validateUsernameFormat(username: string): {
   valid: boolean;
   error?: string;

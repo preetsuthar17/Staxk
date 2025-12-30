@@ -12,7 +12,6 @@ export function WorkspaceLayoutWrapper({
   const isSettingsRoute = pathname?.includes("/settings");
 
   if (isSettingsRoute) {
-    // Settings has its own layout, don't wrap with DashboardSidebar
     return <>{children}</>;
   }
 

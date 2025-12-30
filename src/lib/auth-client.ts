@@ -7,6 +7,30 @@ import {
 import { createAuthClient } from "better-auth/react";
 import { toast } from "sonner";
 
+function clearAuthCookies() {
+  if (typeof document === "undefined") {
+    return;
+  }
+
+  const cookies = document.cookie.split(";");
+  const domain = window.location.hostname;
+  const path = "/";
+
+  for (const cookie of cookies) {
+    const eqPos = cookie.indexOf("=");
+    const name = eqPos > -1 ? cookie.substring(0, eqPos).trim() : cookie.trim();
+
+    if (name.startsWith("staxk")) {
+      // biome-ignore lint/suspicious/noDocumentCookie: Intentionally using document.cookie to clear auth cookies
+      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path};`;
+      // biome-ignore lint/suspicious/noDocumentCookie: Intentionally using document.cookie to clear auth cookies
+      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path}; domain=${domain};`;
+      // biome-ignore lint/suspicious/noDocumentCookie: Intentionally using document.cookie to clear auth cookies
+      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path}; domain=.${domain};`;
+    }
+  }
+}
+
 export const authClient = createAuthClient({
   baseURL:
     typeof window !== "undefined"
@@ -32,8 +56,12 @@ export const authClient = createAuthClient({
         error?.message?.includes("ERR_RESPONSE_HEADERS_TOO_BIG") ||
         error?.message?.includes("headers too big")
       ) {
+        clearAuthCookies();
         toast.error(
-          "Authentication error. Please clear your browser cookies and try again."
+          "Authentication cookies cleared. Please try logging in again.",
+          {
+            duration: 5000,
+          }
         );
       }
     },

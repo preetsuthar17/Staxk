@@ -33,16 +33,12 @@ export const auth = betterAuth({
     },
   }),
   session: {
-    expiresIn: 60 * 60 * 24 * 7, // 7 days
-    updateAge: 60 * 60 * 24, // Update session once per day
-    cookieCache: {
-      enabled: true, // Enable cookie caching to reduce DB hits
-      maxAge: 10 * 60, // Cache for 10 minutes (increased from 5)
-    },
+    expiresIn: 60 * 60 * 24 * 7,
+    updateAge: 60 * 60 * 24,
   },
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: false, // Set to true if you want email verification
+    requireEmailVerification: false,
   },
   socialProviders: {
     google: {
@@ -70,7 +66,6 @@ export const auth = betterAuth({
       minUsernameLength: 3,
       maxUsernameLength: 30,
       usernameValidator: (usernameValue) => {
-        // Combine checks for better performance
         if (
           !(
             USERNAME_STARTS_WITH_LETTER_REGEX.test(usernameValue) &&
@@ -90,14 +85,14 @@ export const auth = betterAuth({
     "http://localhost:3000",
   ],
   rateLimit: {
-    enabled: true, // Enable in development too for testing
+    enabled: true,
     window: 60,
     max: 100,
     storage: "database",
     customRules: {
       "/sign-in/email": {
         window: 10,
-        max: 5, // Increased from 3 to reduce UX friction
+        max: 5,
       },
       "/sign-in/username": {
         window: 10,
@@ -129,11 +124,10 @@ export const auth = betterAuth({
       },
       "/get-session": {
         window: 10,
-        max: 50, // Increased from 30 since this is called frequently
+        max: 50,
       },
     },
   },
-  // Add advanced security options
   advanced: {
     cookiePrefix: "staxk",
   },

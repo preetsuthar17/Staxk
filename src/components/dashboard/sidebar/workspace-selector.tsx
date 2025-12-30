@@ -58,7 +58,6 @@ export function WorkspaceSelector({ pathname }: WorkspaceSelectorProps) {
   const [slugAvailable, setSlugAvailable] = useState(false);
 
   const fetchWorkspaces = useCallback(async () => {
-    // Try to load from sessionStorage first for instant render
     const cached = sessionStorage.getItem("workspaces");
     if (cached) {
       try {

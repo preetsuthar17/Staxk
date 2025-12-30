@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 
 export default function WorkspaceActivityPage() {
   return (
-    <div className="w-full px-4 py-8">
+    <div className="w-full p-4">
       <div className="flex w-full flex-col gap-6">
         <div className="mx-auto flex w-full max-w-xl flex-col gap-6">
           <div className="flex flex-col gap-6">

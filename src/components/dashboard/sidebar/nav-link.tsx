@@ -24,7 +24,7 @@ export function NavLink({
     <li className="list-none">
       <Link
         aria-label={`${children} ${notificationCount > 0 ? `(${notificationCount})` : ""}`}
-        className={`flex items-center gap-2.5 rounded-md px-2 py-1.5 font-[450] text-[13px] transition-colors ${
+        className={`flex items-center gap-2.5 rounded-md px-2 py-1.5 font-[480] text-[13.5px] transition-colors ${
           isActive
             ? "bg-sidebar-accent text-sidebar-accent-foreground"
             : "hover:bg-sidebar-accent"

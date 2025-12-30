@@ -46,7 +46,6 @@ export async function checkRateLimit(
     const record = existing[0];
     const timeSinceLastRequest = now - record.lastRequest;
 
-    // Window expired - reset the counter
     if (timeSinceLastRequest > windowMs) {
       await tx
         .update(rateLimit)
@@ -63,7 +62,6 @@ export async function checkRateLimit(
       };
     }
 
-    // Check if limit exceeded
     if (record.count >= options.max) {
       return {
         allowed: false,
@@ -72,7 +70,6 @@ export async function checkRateLimit(
       };
     }
 
-    // Increment counter atomically using SQL to prevent race conditions
     await tx
       .update(rateLimit)
       .set({

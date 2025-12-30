@@ -24,7 +24,6 @@ export async function GET(request: Request) {
       );
     }
 
-    // Query workspace directly
     const workspaceData = await db
       .select({
         id: workspace.id,
@@ -47,13 +46,11 @@ export async function GET(request: Request) {
 
     const ws = workspaceData[0];
 
-    // Check access - owner or member
     let role: "owner" | "member" = "member";
 
     if (ws.ownerId === session.user.id) {
       role = "owner";
     } else {
-      // Check if user is a member
       const member = await db
         .select({ role: workspaceMember.role })
         .from(workspaceMember)

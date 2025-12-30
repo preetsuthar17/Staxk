@@ -25,7 +25,7 @@ export const user = pgTable(
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .defaultNow()
-      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .$onUpdate(() => new Date())
       .notNull(),
   },
   (table) => [
@@ -43,7 +43,7 @@ export const session = pgTable(
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .defaultNow()
-      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .$onUpdate(() => new Date())
       .notNull(),
     ipAddress: text("ip_address"),
     userAgent: text("user_agent"),
@@ -53,7 +53,7 @@ export const session = pgTable(
   },
   (table) => [
     index("session_userId_idx").on(table.userId),
-    index("session_token_idx").on(table.token), // Faster session lookups
+    index("session_token_idx").on(table.token),
   ]
 );
 
@@ -76,7 +76,7 @@ export const account = pgTable(
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .defaultNow()
-      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .$onUpdate(() => new Date())
       .notNull(),
   },
   (table) => [index("account_userId_idx").on(table.userId)]
@@ -92,7 +92,7 @@ export const verification = pgTable(
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .defaultNow()
-      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .$onUpdate(() => new Date())
       .notNull(),
   },
   (table) => [index("verification_identifier_idx").on(table.identifier)]
@@ -210,7 +210,7 @@ export const workspaceInvitation = pgTable(
     invitedBy: text("invited_by")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    status: text("status").notNull().default("pending"), // pending, accepted, declined
+    status: text("status").notNull().default("pending"),
     expiresAt: timestamp("expires_at"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")

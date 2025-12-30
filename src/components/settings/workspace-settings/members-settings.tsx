@@ -253,7 +253,7 @@ export function MembersSettings({ workspace, userRole }: MembersSettingsProps) {
           setMembers(data.members || []);
         }
       } catch {
-        // Silently ignore fetch errors
+        // Ignore fetch errors
       }
     };
 

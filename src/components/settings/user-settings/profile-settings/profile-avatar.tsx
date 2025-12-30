@@ -3,7 +3,7 @@
 import { IconCamera, IconUser } from "@tabler/icons-react";
 import imageCompression from "browser-image-compression";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { startTransition, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
@@ -57,11 +57,19 @@ function resetFileInput(
 
 async function compressImage(file: File): Promise<File> {
   const options = {
-    maxSizeMB: 0.5,
+    maxSizeMB: 0.3,
     maxWidthOrHeight: 1024,
     useWebWorker: true,
     fileType: file.type,
   };
+
+  await new Promise<void>((resolve) => {
+    if (typeof requestIdleCallback !== "undefined") {
+      requestIdleCallback(() => resolve(), { timeout: 100 });
+    } else {
+      setTimeout(() => resolve(), 0);
+    }
+  });
 
   const compressedFile = await imageCompression(file, options);
 
@@ -91,26 +99,54 @@ async function uploadAvatar(
   refetch?: () => Promise<void>,
   onUploadComplete?: () => void
 ) {
-  const { error } = await updateUser({
-    image: base64String,
-  });
+  const requestBody = JSON.stringify({ image: base64String });
+  const MAX_REQUEST_SIZE = 1_000_000; // 1MB
 
-  if (error) {
-    throw new Error(error.message || "Failed to update profile picture");
+  if (requestBody.length > MAX_REQUEST_SIZE) {
+    throw new Error(
+      "Image is too large. Please try a smaller image or compress it further."
+    );
   }
 
-  toast.success("Profile picture updated successfully");
-  router.refresh();
+  try {
+    const { error } = await updateUser({
+      image: base64String,
+    });
 
-  if (refetch && typeof refetch === "function") {
-    try {
-      await refetch();
-    } catch {
-      // Silently ignore refetch errors
+    if (error) {
+      throw new Error(error.message || "Failed to update profile picture");
     }
-  }
 
-  onUploadComplete?.();
+    toast.success("Profile picture updated successfully");
+
+    startTransition(() => {
+      router.refresh();
+    });
+
+    if (refetch && typeof refetch === "function") {
+      try {
+        await refetch();
+      } catch {
+        // Silently ignore refetch errors
+      }
+    }
+
+    onUploadComplete?.();
+  } catch (error) {
+    if (error instanceof Error) {
+      if (
+        error.message.includes("Failed to fetch") ||
+        error.message.includes("NetworkError") ||
+        error.message.includes("Network request failed")
+      ) {
+        throw new Error(
+          "Network error. The image might be too large or the connection timed out. Please try again with a smaller image."
+        );
+      }
+      throw error;
+    }
+    throw new Error("Failed to update profile picture. Please try again.");
+  }
 }
 
 function validateBase64Size(
@@ -163,52 +199,73 @@ export function ProfileAvatar({
       return;
     }
 
+    await new Promise<void>((resolve) => {
+      if (typeof requestIdleCallback !== "undefined") {
+        requestIdleCallback(() => resolve(), { timeout: 50 });
+      } else {
+        setTimeout(() => resolve(), 0);
+      }
+    });
+
     setIsUploadingAvatar(true);
     onUploadStart?.();
 
     try {
       const compressedFile = await compressImage(file);
 
-      const reader = new FileReader();
+      const base64String = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
 
-      reader.onloadend = async () => {
-        const base64String = reader.result as string;
+        reader.onloadend = () => {
+          const result = reader.result as string;
+          if (result) {
+            resolve(result);
+          } else {
+            reject(new Error("Failed to read image file"));
+          }
+        };
 
-        if (
-          !validateBase64Size(
-            base64String,
-            setIsUploadingAvatar,
-            onUploadComplete,
-            fileInputRef
-          )
-        ) {
-          return;
-        }
+        reader.onerror = () => {
+          reject(new Error("Failed to read image file"));
+        };
 
+        reader.readAsDataURL(compressedFile);
+      });
+
+      await new Promise<void>((resolve) => {
+        setTimeout(() => resolve(), 0);
+      });
+
+      if (
+        !validateBase64Size(
+          base64String,
+          setIsUploadingAvatar,
+          onUploadComplete,
+          fileInputRef
+        )
+      ) {
+        return;
+      }
+
+      startTransition(() => {
         setAvatarPreview(base64String);
+      });
 
-        try {
-          await uploadAvatar(base64String, router, refetch, onUploadComplete);
-        } catch (error) {
-          safeClientError("Error uploading avatar:", error);
-          toast.error(
-            error instanceof Error
-              ? error.message
-              : "Failed to update profile picture"
-          );
+      try {
+        await uploadAvatar(base64String, router, refetch, onUploadComplete);
+      } catch (error) {
+        safeClientError("Error uploading avatar:", error);
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : "Failed to update profile picture"
+        );
+        startTransition(() => {
           setAvatarPreview(session?.user?.image || null);
-        } finally {
-          setIsUploadingAvatar(false);
-        }
-      };
-
-      reader.onerror = () => {
-        toast.error("Failed to read image file");
+        });
+      } finally {
         setIsUploadingAvatar(false);
-        onUploadComplete?.();
-      };
-
-      reader.readAsDataURL(compressedFile);
+      }
     } catch (error) {
       handleCompressionError(error, setIsUploadingAvatar, onUploadComplete);
     }

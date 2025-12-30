@@ -219,7 +219,7 @@ function getErrorMessage(err: unknown): string {
       err.message.includes("ERR_RESPONSE_HEADERS_TOO_BIG") ||
       err.message.includes("headers too big")
     ) {
-      return "Authentication error. Please clear your browser cookies and try again.";
+      return "Authentication cookies have been cleared. Please try logging in again.";
     }
     return err.message;
   }

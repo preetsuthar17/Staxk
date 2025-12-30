@@ -97,7 +97,6 @@ export async function DELETE(
       );
     }
 
-    // Delete the workspace (cascade will handle related records)
     await db.delete(workspace).where(eq(workspace.id, workspaceId));
 
     return NextResponse.json({
