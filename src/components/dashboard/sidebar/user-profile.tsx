@@ -29,6 +29,7 @@ function AnimatedAvatar({
       height={32}
       onLoad={() => setLoaded(true)}
       src={src}
+      unoptimized
       width={32}
     />
   );

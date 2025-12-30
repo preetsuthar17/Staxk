@@ -89,6 +89,7 @@ export function InvitationList() {
       }
 
       toast.success("Invitation accepted! You are now a member.");
+      localStorage.setItem("lastWorkspaceSlug", workspaceSlug);
       await mutate();
       window.dispatchEvent(new CustomEvent("invitations-updated"));
       router.push(`/${workspaceSlug}`);

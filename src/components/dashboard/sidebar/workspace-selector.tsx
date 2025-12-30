@@ -88,6 +88,7 @@ export function WorkspaceSelector({ pathname }: WorkspaceSelectorProps) {
 
       if (response.ok && data.workspace) {
         localStorage.setItem("currentWorkspaceId", data.workspace.id);
+        localStorage.setItem("lastWorkspaceSlug", slug);
         router.push(`/${slug}`);
       } else {
         toast.error("Failed to switch workspace");
@@ -219,6 +220,7 @@ export function WorkspaceSelector({ pathname }: WorkspaceSelectorProps) {
       resetWorkspaceForm();
       fetchWorkspaces();
       localStorage.setItem("currentWorkspaceId", data.id);
+      localStorage.setItem("lastWorkspaceSlug", data.slug);
       router.push(`/${data.slug}`);
     } catch (error) {
       toast.error(

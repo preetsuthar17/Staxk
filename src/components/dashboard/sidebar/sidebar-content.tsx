@@ -1,6 +1,6 @@
 "use client";
 
-import { IconHome, IconInbox } from "@tabler/icons-react";
+import { IconBell, IconHome, IconInbox } from "@tabler/icons-react";
 import {
   type NavItem,
   SidebarContent as SidebarContentContainer,
@@ -22,9 +22,14 @@ export function SidebarContent({
   const mainNavItems: NavItem[] = [
     { href: "/", icon: IconHome, label: "Home" },
     {
-      href: "/inbox",
+      href: "/activity",
       icon: IconInbox,
-      label: "Inbox",
+      label: "Activity",
+    },
+    {
+      href: "/notifications",
+      icon: IconBell,
+      label: "Notifications",
       isWorkspaceAware: false,
       notificationCount: invitationCount,
     },

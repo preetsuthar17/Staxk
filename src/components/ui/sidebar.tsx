@@ -152,7 +152,9 @@ function getWorkspaceSlug(pathname: string): string | null {
     segments[0] !== "home" &&
     segments[0] !== "login" &&
     segments[0] !== "signup" &&
-    segments[0] !== "inbox"
+    segments[0] !== "inbox" &&
+    segments[0] !== "notifications" &&
+    segments[0] !== "activity"
   ) {
     return segments[0];
   }

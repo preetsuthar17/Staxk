@@ -146,11 +146,12 @@ function formatDate(dateString: string): string {
 function SessionItemSkeleton({ isCurrent = false }: { isCurrent?: boolean }) {
   return (
     <div
-      className={`flex items-center justify-between rounded-md border border-border ${isCurrent ? "bg-muted/30" : ""
-        } p-3 px-4`}
+      className={`flex items-center justify-between rounded-md border border-border ${
+        isCurrent ? "bg-muted/30" : ""
+      } p-3 px-4`}
     >
       <div className="flex flex-1 items-start gap-4">
-        <div className="flex items-center justify-center bg-white p-2 rounded">
+        <div className="flex items-center justify-center rounded bg-white p-2">
           <div className="mt-0.5 size-5 animate-pulse rounded bg-muted" />
         </div>
         <div className="flex flex-1 flex-col gap-1.5">
@@ -271,7 +272,7 @@ export function SessionList() {
               <div className="flex w-full flex-col gap-2">
                 <div className="flex items-center justify-between rounded-md border border-border bg-muted/30 p-3 px-4">
                   <div className="flex flex-1 items-start gap-4">
-                    <div className="flex items-center justify-center bg-white p-2 rounded">
+                    <div className="flex items-center justify-center rounded bg-white p-2">
                       <Icon className="mt-0.5 size-5 text-muted-foreground" />
                     </div>
                     <div className="flex flex-1 flex-col gap-1.5">
