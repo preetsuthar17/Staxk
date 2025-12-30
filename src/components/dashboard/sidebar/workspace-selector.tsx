@@ -34,7 +34,6 @@ interface Workspace {
   id: string;
   name: string;
   slug: string;
-  description: string | null;
   logo: string | null;
   role: string;
 }
@@ -58,18 +57,34 @@ export function WorkspaceSelector({ pathname }: WorkspaceSelectorProps) {
   const [slugError, setSlugError] = useState<string | null>(null);
   const [slugAvailable, setSlugAvailable] = useState(false);
 
-  const fetchWorkspaces = useCallback(() => {
-    fetch("/api/workspace/list")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.workspaces) {
-          setWorkspaces(data.workspaces);
+  const fetchWorkspaces = useCallback(async () => {
+    // Try to load from sessionStorage first for instant render
+    const cached = sessionStorage.getItem("workspaces");
+    if (cached) {
+      try {
+        const parsedWorkspaces = JSON.parse(cached);
+        if (Array.isArray(parsedWorkspaces) && parsedWorkspaces.length > 0) {
+          setWorkspaces(parsedWorkspaces);
+          setIsLoading(false);
         }
-        setIsLoading(false);
-      })
-      .catch(() => {
-        setIsLoading(false);
-      });
+      } catch {
+        // Invalid cache, continue to fetch
+      }
+    }
+
+    try {
+      const res = await fetch("/api/workspace/list", { cache: "no-store" });
+      const data = await res.json();
+
+      if (data.workspaces) {
+        setWorkspaces(data.workspaces);
+        sessionStorage.setItem("workspaces", JSON.stringify(data.workspaces));
+      }
+    } catch {
+      // Error fetching, but we may have cached data to show
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -77,25 +92,20 @@ export function WorkspaceSelector({ pathname }: WorkspaceSelectorProps) {
   }, [fetchWorkspaces]);
 
   const currentSlug = getWorkspaceSlug(pathname);
-  const currentWorkspace = workspaces.find((ws) => ws.slug === currentSlug);
 
-  const handleWorkspaceSelect = async (slug: string) => {
-    try {
-      const response = await fetch(
-        `/api/workspace/by-slug?slug=${encodeURIComponent(slug)}`
-      );
-      const data = await response.json();
+  const lastSlug =
+    typeof window !== "undefined"
+      ? localStorage.getItem("lastWorkspaceSlug")
+      : null;
 
-      if (response.ok && data.workspace) {
-        localStorage.setItem("currentWorkspaceId", data.workspace.id);
-        localStorage.setItem("lastWorkspaceSlug", slug);
-        router.push(`/${slug}`);
-      } else {
-        toast.error("Failed to switch workspace");
-      }
-    } catch {
-      toast.error("Failed to switch workspace");
-    }
+  const currentWorkspace =
+    workspaces.find((ws) => ws.slug === currentSlug) ||
+    (lastSlug ? workspaces.find((ws) => ws.slug === lastSlug) : undefined);
+
+  const handleWorkspaceSelect = (workspace: Workspace) => {
+    localStorage.setItem("currentWorkspaceId", workspace.id);
+    localStorage.setItem("lastWorkspaceSlug", workspace.slug);
+    router.push(`/${workspace.slug}`);
   };
 
   const handleWorkspaceLogout = async () => {
@@ -218,7 +228,21 @@ export function WorkspaceSelector({ pathname }: WorkspaceSelectorProps) {
       toast.success("Workspace created successfully");
       setIsDialogOpen(false);
       resetWorkspaceForm();
-      fetchWorkspaces();
+
+      const updatedWorkspaces = [
+        ...workspaces,
+        {
+          id: data.id,
+          name: workspaceName,
+          slug: data.slug,
+          description: workspaceDescription || null,
+          logo: null,
+          role: "owner",
+        },
+      ];
+      setWorkspaces(updatedWorkspaces);
+      sessionStorage.setItem("workspaces", JSON.stringify(updatedWorkspaces));
+
       localStorage.setItem("currentWorkspaceId", data.id);
       localStorage.setItem("lastWorkspaceSlug", data.slug);
       router.push(`/${data.slug}`);
@@ -284,7 +308,7 @@ export function WorkspaceSelector({ pathname }: WorkspaceSelectorProps) {
                   <DropdownMenuItem
                     className="flex items-center gap-2.5"
                     key={workspace.id}
-                    onClick={() => handleWorkspaceSelect(workspace.slug)}
+                    onClick={() => handleWorkspaceSelect(workspace)}
                   >
                     <Avatar className="size-4 shrink-0">
                       <AvatarImage

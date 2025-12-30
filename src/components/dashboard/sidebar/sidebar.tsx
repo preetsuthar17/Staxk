@@ -15,6 +15,12 @@ interface Workspace {
   slug: string;
 }
 
+interface CachedUserData {
+  email?: string | null;
+  image?: string | null;
+  name?: string | null;
+}
+
 export function DashboardSidebar() {
   const { data: session, isPending } = useSession();
   const pathname = usePathname();
@@ -27,11 +33,36 @@ export function DashboardSidebar() {
   const [fallbackWorkspaceSlug, setFallbackWorkspaceSlug] = useState<
     string | null
   >(null);
+  const [cachedUser, setCachedUser] = useState<CachedUserData | null>(null);
 
   useEffect(() => {
+    const cached = sessionStorage.getItem("userProfile");
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached) as CachedUserData;
+        setCachedUser(parsed);
+      } catch {
+        // Invalid cache, ignore
+      }
+    }
     setRandomFallbackSeed(getRandomSeed());
     setRandomPendingSeed(getRandomSeed());
   }, []);
+
+  useEffect(() => {
+    if (session?.user) {
+      const userData: CachedUserData = {
+        email: session.user.email,
+        image: session.user.image,
+        name: session.user.name,
+      };
+      setCachedUser(userData);
+      sessionStorage.setItem("userProfile", JSON.stringify(userData));
+    } else if (session === null) {
+      setCachedUser(null);
+      sessionStorage.removeItem("userProfile");
+    }
+  }, [session]);
 
   const fetchWorkspaces = useCallback(async () => {
     try {
@@ -85,7 +116,7 @@ export function DashboardSidebar() {
     }
   }, [pathname]);
 
-  const user = session?.user;
+  const user = session?.user || cachedUser;
   const username = getUsername(user?.email, user?.name);
   const dicebearUrl = getDicebearUrl(username);
   const randomFallbackUrl = randomFallbackSeed
@@ -98,8 +129,10 @@ export function DashboardSidebar() {
   const workspaceSlugFromPath = getWorkspaceSlug(pathname);
   const workspaceSlug = workspaceSlugFromPath || fallbackWorkspaceSlug;
 
+  const shouldShowLoading = isPending && !cachedUser;
+
   return (
-    <Sidebar className="justify-between" disabled={isPending}>
+    <Sidebar className="justify-between" disabled={shouldShowLoading}>
       <div className="flex flex-col -space-y-4">
         <SidebarHeader>
           <WorkspaceSelector pathname={pathname} />
@@ -112,7 +145,7 @@ export function DashboardSidebar() {
       <DashboardSidebarFooter
         dicebearUrl={dicebearUrl}
         fallbackUrl={randomFallbackUrl}
-        isPending={isPending}
+        isPending={shouldShowLoading}
         pathname={pathname}
         pendingUrl={randomPendingUrl}
         settingsHref={settingsHref}
