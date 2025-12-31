@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import type { ReactNode } from "react";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { Toaster } from "sonner";
+
 import { SessionWrapper } from "@/components/session-wrapper";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { NuqsAdapter } from 'nuqs/adapters/next/app'
-import { type ReactNode } from 'react'
 
 import "./globals.css";
 
