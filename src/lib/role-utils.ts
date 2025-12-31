@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { workspaceRole, workspaceRolePermission } from "@/db/schema";
-import { DEFAULT_ROLE_PERMISSIONS } from "./permissions";
+import { DEFAULT_ROLE_PERMISSIONS, type PermissionKey } from "./permissions";
 
 export interface Role {
   id: string;
@@ -59,10 +59,13 @@ export async function initializeWorkspaceRoles(
     });
 
     // Add default permissions
-    const permissions = DEFAULT_ROLE_PERMISSIONS[roleData.identifier] || [];
+    const permissions =
+      DEFAULT_ROLE_PERMISSIONS[
+        roleData.identifier as keyof typeof DEFAULT_ROLE_PERMISSIONS
+      ] || [];
     if (permissions.length > 0) {
       await db.insert(workspaceRolePermission).values(
-        permissions.map((permission) => ({
+        permissions.map((permission: PermissionKey) => ({
           id: crypto.randomUUID(),
           roleId,
           permission,
