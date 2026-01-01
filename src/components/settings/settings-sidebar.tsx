@@ -23,11 +23,7 @@ import {
 } from "@/components/ui/sidebar";
 import { authClient } from "@/lib/auth-client";
 
-interface SettingsSidebarProps {
-  username: string;
-}
-
-export function SettingsSidebar({ username }: SettingsSidebarProps) {
+export function SettingsSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { data: session } = authClient.useSession();
@@ -36,25 +32,25 @@ export function SettingsSidebar({ username }: SettingsSidebarProps) {
   const menuItems = [
     {
       title: "General",
-      url: `/${username}/settings`,
+      url: "/settings",
       icon: IconSettings,
       iconFilled: IconSettingsFilled,
     },
     {
       title: "Profile",
-      url: `/${username}/settings/profile`,
+      url: "/settings/profile",
       icon: IconUser,
       iconFilled: IconUserFilled,
     },
     {
       title: "Notifications",
-      url: `/${username}/settings/notifications`,
+      url: "/settings/notifications",
       icon: IconBell,
       iconFilled: IconBellFilled,
     },
     {
       title: "Security",
-      url: `/${username}/settings/security`,
+      url: "/settings/security",
       icon: IconShield,
       iconFilled: IconShieldFilled,
     },
@@ -67,10 +63,7 @@ export function SettingsSidebar({ username }: SettingsSidebarProps) {
           <SidebarGroupContent className="-p-2">
             <SidebarMenu>
               {menuItems.map((item) => {
-                const isActive =
-                  pathname === item.url ||
-                  (item.url === `/${username}/settings` &&
-                    pathname === `/${username}/settings`);
+                const isActive = pathname === item.url;
                 const IconComponent = isActive ? item.iconFilled : item.icon;
                 return (
                   <SidebarMenuItem key={item.title}>

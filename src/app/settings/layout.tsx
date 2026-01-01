@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { use, useEffect } from "react";
+import { useEffect } from "react";
 import { SettingsSidebar } from "@/components/settings/settings-sidebar";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,16 +15,13 @@ import { authClient } from "@/lib/auth-client";
 
 interface SettingsLayoutProps {
   children: React.ReactNode;
-  params: Promise<{ username: string }>;
 }
 
 export default function SettingsLayout({
   children,
-  params,
 }: SettingsLayoutProps) {
   const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
-  const { username } = use(params);
 
   useEffect(() => {
     if (!isPending) {
@@ -32,13 +29,8 @@ export default function SettingsLayout({
         router.replace("/login");
         return;
       }
-
-      if (session.user.username !== username) {
-        router.replace("/home");
-        return;
-      }
     }
-  }, [session, isPending, router, username]);
+  }, [session, isPending, router]);
 
   if (isPending) {
     return (
@@ -48,13 +40,13 @@ export default function SettingsLayout({
     );
   }
 
-  if (!session?.user || session.user.username !== username) {
+  if (!session?.user) {
     return null;
   }
 
   return (
     <SidebarProvider>
-      <SettingsSidebar username={username} />
+      <SettingsSidebar />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
           <SidebarTrigger />
@@ -71,3 +63,4 @@ export default function SettingsLayout({
     </SidebarProvider>
   );
 }
+

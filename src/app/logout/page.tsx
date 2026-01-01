@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Spinner } from "@/components/ui/spinner";
 import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
 
 export default function LogoutPage() {
   const router = useRouter();
@@ -15,7 +16,7 @@ export default function LogoutPage() {
         router.push("/login");
         router.refresh();
       } catch (error) {
-        console.error("Error during logout:", error);
+        toast.error("Error during logout");
         router.push("/login");
         router.refresh();
       }

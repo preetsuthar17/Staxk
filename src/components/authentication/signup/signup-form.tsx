@@ -110,11 +110,14 @@ export function SignUpForm() {
 
       setCheckingUsername(true);
       try {
-        const response = await fetch(
-          `/api/username/check?username=${encodeURIComponent(trimmedUsername)}`
-        );
-        const data = await response.json();
-        setUsernameAvailable(data.available ?? false);
+        const { data, error } = await authClient.isUsernameAvailable({
+          username: trimmedUsername,
+        });
+        if (error) {
+          setUsernameAvailable(null);
+        } else {
+          setUsernameAvailable(data?.available ?? false);
+        }
       } catch {
         setUsernameAvailable(null);
       } finally {
