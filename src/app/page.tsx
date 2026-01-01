@@ -113,10 +113,8 @@ export default function Home() {
             onClick={handleLogout}
             variant="outline"
           >
-            <>
-              <IconLogout className="size-4" />
-              Logout
-            </>
+            <IconLogout className="size-4" />
+            Logout
           </Button>
         </CardContent>
       </Card>

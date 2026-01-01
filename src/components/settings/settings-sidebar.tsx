@@ -76,13 +76,19 @@ export function SettingsSidebar({ username }: SettingsSidebarProps) {
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
                       isActive={isActive}
-                      tooltip={item.title}
                       onClick={() => router.push(item.url)}
+                      tooltip={item.title}
                     >
                       <IconComponent
-                        className={isActive ? "fill-current text-muted-foreground contrast-200" : undefined}
+                        className={
+                          isActive
+                            ? "fill-current text-muted-foreground contrast-200"
+                            : undefined
+                        }
                       />
-                      <span className="text-sm font-[490] text-[13px]">{item.title}</span>
+                      <span className="font-[490] text-[13px] text-sm">
+                        {item.title}
+                      </span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );
