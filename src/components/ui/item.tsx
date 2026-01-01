@@ -9,7 +9,7 @@ function ItemGroup({ className, ...props }: React.ComponentProps<"ul">) {
   return (
     <ul
       className={cn(
-        "group/item-group flex w-full list-none flex-col gap-4 has-[[data-size=sm]]:gap-2.5 has-[[data-size=xs]]:gap-2",
+        "group/item-group flex w-full list-none flex-col gap-4 has-data-[size=sm]:gap-2.5 has-data-[size=xs]:gap-2",
         className
       )}
       data-slot="item-group"
