@@ -280,7 +280,7 @@ export function SignUpForm() {
     }
 
     if (
-      e.key === "Backspace" &&
+      e.key === "ArrowLeft" &&
       currentStep > 1 &&
       (!isInput || (isInput && (target as HTMLInputElement).value === ""))
     ) {
@@ -540,6 +540,7 @@ export function SignUpForm() {
                   isLoading ||
                   (currentStep === 2 && usernameAvailable === false)
                 }
+                loading={isLoading}
                 onClick={handleNext}
                 type="button"
               >
