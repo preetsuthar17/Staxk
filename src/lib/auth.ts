@@ -1,11 +1,13 @@
 import "dotenv/config";
+import { passkey } from "@better-auth/passkey";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { username, lastLoginMethod } from "better-auth/plugins";
-import { passkey } from "@better-auth/passkey";
+import { lastLoginMethod, username } from "better-auth/plugins";
 import { db } from "@/db";
 
 const USERNAME_REGEX = /^[a-zA-Z0-9_.]+$/;
+const HTTP_PROTOCOL_REGEX = /^https?:\/\//;
+const PORT_REGEX = /:\d+/;
 
 const baseURL = process.env.BETTER_AUTH_URL;
 if (!baseURL) {
@@ -17,7 +19,10 @@ const getRpID = (url: string): string => {
     const urlObj = new URL(url);
     return urlObj.hostname;
   } catch {
-    return url.replace(/^https?:\/\//, "").replace(/:\d+/, "").split("/")[0];
+    return url
+      .replace(HTTP_PROTOCOL_REGEX, "")
+      .replace(PORT_REGEX, "")
+      .split("/")[0];
   }
 };
 

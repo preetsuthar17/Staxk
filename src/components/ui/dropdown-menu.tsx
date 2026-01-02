@@ -3,10 +3,10 @@
 import { Menu as MenuPrimitive } from "@base-ui/react/menu";
 import { mergeProps } from "@base-ui/react/merge-props";
 import { IconCheck, IconChevronRight } from "@tabler/icons-react";
-import * as React from "react";
+import type { VariantProps } from "class-variance-authority";
+import { type ComponentProps, isValidElement, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "./button";
-import type { VariantProps } from "class-variance-authority";
 
 function DropdownMenu({ ...props }: MenuPrimitive.Root.Props) {
   return <MenuPrimitive.Root data-slot="dropdown-menu" {...props} />;
@@ -34,7 +34,7 @@ function DropdownMenuTrigger({
 
   // If a single Button-like child is passed, extract its props and use render prop
   if (
-    React.isValidElement(children) &&
+    isValidElement(children) &&
     children.type &&
     typeof children.type === "function" &&
     (children.type.name === "Button" ||
@@ -49,11 +49,15 @@ function DropdownMenuTrigger({
       className?: string;
       disabled?: boolean;
       loading?: boolean;
-      children?: React.ReactNode;
+      children?: ReactNode;
       [key: string]: unknown;
     };
-    const { variant = "default", size = "default", className, ...restProps } =
-      buttonProps;
+    const {
+      variant = "default",
+      size = "default",
+      className,
+      ...restProps
+    } = buttonProps;
 
     return (
       <MenuPrimitive.Trigger
@@ -200,7 +204,7 @@ function DropdownMenuSubContent({
   sideOffset = 0,
   className,
   ...props
-}: React.ComponentProps<typeof DropdownMenuContent>) {
+}: ComponentProps<typeof DropdownMenuContent>) {
   return (
     <DropdownMenuContent
       align={align}
@@ -295,10 +299,7 @@ function DropdownMenuSeparator({
   );
 }
 
-function DropdownMenuShortcut({
-  className,
-  ...props
-}: React.ComponentProps<"span">) {
+function DropdownMenuShortcut({ className, ...props }: ComponentProps<"span">) {
   return (
     <span
       className={cn(

@@ -292,9 +292,7 @@ export function ChangePasswordCard() {
               <div className="flex gap-0.5">
                 <Input
                   aria-describedby={
-                    errors.currentPassword
-                      ? "currentPassword-error"
-                      : undefined
+                    errors.currentPassword ? "currentPassword-error" : undefined
                   }
                   aria-invalid={!!errors.currentPassword}
                   autoComplete="current-password"
@@ -382,9 +380,7 @@ export function ChangePasswordCard() {
               <div className="flex gap-0.5">
                 <Input
                   aria-describedby={
-                    errors.confirmPassword
-                      ? "confirmPassword-error"
-                      : undefined
+                    errors.confirmPassword ? "confirmPassword-error" : undefined
                   }
                   aria-invalid={!!errors.confirmPassword}
                   autoComplete="new-password"
@@ -465,4 +461,3 @@ export function ChangePasswordCard() {
     </>
   );
 }
-

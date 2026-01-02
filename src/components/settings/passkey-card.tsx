@@ -36,18 +36,24 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Item, ItemActions, ItemDescription, ItemGroup, ItemHeader } from "@/components/ui/item";
+import {
+  Item,
+  ItemActions,
+  ItemDescription,
+  ItemGroup,
+  ItemHeader,
+} from "@/components/ui/item";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { authClient } from "@/lib/auth-client";
 
-type Passkey = {
+interface Passkey {
   id: string;
   name: string | null;
   deviceType: string;
   backedUp: boolean;
   createdAt: string;
-};
+}
 
 export function PasskeyCard() {
   const [passkeys, setPasskeys] = useState<Passkey[]>([]);
@@ -78,7 +84,7 @@ export function PasskeyCard() {
       if (result.data) {
         setPasskeys(result.data as unknown as Passkey[]);
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error("An error occurred while loading passkeys");
     } finally {
       setIsLoading(false);
@@ -86,7 +92,9 @@ export function PasskeyCard() {
   }, []);
 
   useEffect(() => {
-    void fetchPasskeys();
+    fetchPasskeys().catch(() => {
+      // Error handling is done in fetchPasskeys
+    });
   }, [fetchPasskeys]);
 
   const handleAddPasskey = useCallback(() => {
@@ -128,7 +136,7 @@ export function PasskeyCard() {
 
         toast.success("Passkey added successfully");
         await fetchPasskeys();
-      } catch (error) {
+      } catch (_error) {
         toast.error("An error occurred while registering passkey");
       } finally {
         setIsAdding(false);
@@ -150,7 +158,9 @@ export function PasskeyCard() {
       e.preventDefault();
       setRenameError(null);
 
-      if (!renamingId) return;
+      if (!renamingId) {
+        return;
+      }
 
       const trimmedName = renameValue.trim();
 
@@ -191,7 +201,7 @@ export function PasskeyCard() {
         setShowRenameDialog(false);
         setRenamingId(null);
         setRenameValue("");
-      } catch (error) {
+      } catch (_error) {
         // Rollback on error
         setPasskeys(previousPasskeys);
         toast.error("An error occurred while renaming passkey");
@@ -208,7 +218,9 @@ export function PasskeyCard() {
   }, []);
 
   const handleDeleteConfirm = useCallback(async () => {
-    if (!passkeyToDelete) return;
+    if (!passkeyToDelete) {
+      return;
+    }
 
     const passkeyId = passkeyToDelete.id;
     setDeletingId(passkeyId);
@@ -231,7 +243,7 @@ export function PasskeyCard() {
       }
 
       toast.success("Passkey deleted successfully");
-    } catch (error) {
+    } catch (_error) {
       // Rollback on error
       setPasskeys(previousPasskeys);
       toast.error("An error occurred while deleting passkey");
@@ -274,10 +286,10 @@ export function PasskeyCard() {
             {isLoadingState ? (
               <div className="flex flex-col gap-3">
                 {[1, 2, 3].map((i) => (
-                  <Skeleton key={i} className="h-16 w-full" />
+                  <Skeleton className="h-16 w-full" key={i} />
                 ))}
                 <div className="flex justify-end">
-                <Skeleton className="h-10 w-32" />
+                  <Skeleton className="h-10 w-32" />
                 </div>
               </div>
             ) : (
@@ -285,7 +297,11 @@ export function PasskeyCard() {
                 {passkeys.length > 0 ? (
                   <ItemGroup>
                     {passkeys.map((passkey) => (
-                      <Item key={passkey.id} variant="outline" className="flex-nowrap" >
+                      <Item
+                        className="flex-nowrap"
+                        key={passkey.id}
+                        variant="outline"
+                      >
                         <ItemHeader>
                           <div className="flex flex-col gap-1">
                             <div className="font-medium">
@@ -496,10 +512,7 @@ export function PasskeyCard() {
         </DialogContent>
       </Dialog>
 
-      <AlertDialog
-        onOpenChange={setShowDeleteDialog}
-        open={showDeleteDialog}
-      >
+      <AlertDialog onOpenChange={setShowDeleteDialog} open={showDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Passkey?</AlertDialogTitle>
@@ -531,4 +544,3 @@ export function PasskeyCard() {
     </>
   );
 }
-

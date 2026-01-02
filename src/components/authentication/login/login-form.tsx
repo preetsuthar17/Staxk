@@ -31,7 +31,9 @@ const isEmail = (value: string) => {
 };
 
 const getMethodDisplayName = (method: string | null | undefined): string => {
-  if (!method) return "";
+  if (!method) {
+    return "";
+  }
   const methodMap: Record<string, string> = {
     email: "Email",
     google: "Google",
@@ -66,13 +68,17 @@ export function LoginForm() {
           const available =
             await PublicKeyCredential.isConditionalMediationAvailable();
           if (available) {
-            void authClient.signIn.passkey({ autoFill: true });
+            authClient.signIn.passkey({ autoFill: true }).catch(() => {
+              // Ignore errors for conditional UI
+            });
           }
         } catch {
           // Conditional UI not available, ignore
         }
       };
-      void checkConditionalUI();
+      checkConditionalUI().catch(() => {
+        // Ignore errors for conditional UI check
+      });
     }
   }, []);
 
@@ -130,9 +136,7 @@ export function LoginForm() {
                 type="text"
               />
             </Label>
-            {fieldState.invalid && (
-              <FieldError errors={[fieldState.error]} />
-            )}
+            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
           </div>
         )}
       />
@@ -158,9 +162,7 @@ export function LoginForm() {
                   type={showPassword ? "text" : "password"}
                 />
                 <Button
-                  aria-label={
-                    showPassword ? "Hide password" : "Show password"
-                  }
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                   className="size-10 shrink-0"
                   disabled={isLoading}
                   onClick={() => setShowPassword(!showPassword)}
@@ -177,9 +179,7 @@ export function LoginForm() {
                 </Button>
               </div>
             </Label>
-            {fieldState.invalid && (
-              <FieldError errors={[fieldState.error]} />
-            )}
+            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
           </div>
         )}
       />
@@ -206,11 +206,20 @@ export function LoginForm() {
         )}
       />
       <div className="flex flex-col gap-1">
-        <Button disabled={isLoading} loading={isLoading} type="submit" variant={lastUsedMethod === "email" || !lastUsedMethod ? "default" : "outline"}>
+        <Button
+          disabled={isLoading}
+          loading={isLoading}
+          type="submit"
+          variant={
+            lastUsedMethod === "email" || !lastUsedMethod
+              ? "default"
+              : "outline"
+          }
+        >
           Sign in
         </Button>
         {showHelperText && lastUsedMethod === "email" && (
-          <p className="text-center font-medium py-4 text-muted-foreground text-sm">
+          <p className="py-4 text-center font-medium text-muted-foreground text-sm">
             You last used {getMethodDisplayName(lastUsedMethod)} to sign in
           </p>
         )}
@@ -218,37 +227,50 @@ export function LoginForm() {
     </div>
   );
 
+  const renderLoginMethods = () => {
+    if (lastUsedMethod === "email") {
+      return (
+        <>
+          {renderEmailForm(true)}
+          <LoginWithGoogle variant="outline" />
+          <LoginWithPasskey variant="outline" />
+        </>
+      );
+    }
+    if (lastUsedMethod === "google") {
+      return (
+        <>
+          <LoginWithGoogle showHelperText variant="default" />
+          {renderEmailForm(false)}
+          <LoginWithPasskey variant="outline" />
+        </>
+      );
+    }
+    if (lastUsedMethod === "passkey") {
+      return (
+        <>
+          <LoginWithPasskey showHelperText variant="default" />
+          {renderEmailForm(false)}
+          <LoginWithGoogle variant="outline" />
+        </>
+      );
+    }
+    return (
+      <>
+        {renderEmailForm(false)}
+        <LoginWithGoogle variant="outline" />
+        <LoginWithPasskey variant="outline" />
+      </>
+    );
+  };
+
   return (
     <div className="flex flex-col">
       <form
         className="flex flex-col gap-2"
         onSubmit={form.handleSubmit(onSubmit)}
       >
-        {lastUsedMethod === "email" ? (
-          <>
-            {renderEmailForm(true)}
-            <LoginWithGoogle variant="outline" />
-            <LoginWithPasskey variant="outline" />
-          </>
-        ) : lastUsedMethod === "google" ? (
-          <>
-            <LoginWithGoogle variant="default" showHelperText />
-            {renderEmailForm(false)}
-            <LoginWithPasskey variant="outline" />
-          </>
-        ) : lastUsedMethod === "passkey" ? (
-          <>
-            <LoginWithPasskey variant="default" showHelperText />
-            {renderEmailForm(false)}
-            <LoginWithGoogle variant="outline" />
-          </>
-        ) : (
-          <>
-            {renderEmailForm(false)}
-            <LoginWithGoogle variant="outline" />
-            <LoginWithPasskey variant="outline" />
-          </>
-        )}
+        {renderLoginMethods()}
       </form>
     </div>
   );

@@ -1,18 +1,86 @@
 "use client";
 
+import { IconFingerprint } from "@tabler/icons-react";
+import type { ComponentProps } from "react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
-import { IconFingerprint } from "@tabler/icons-react";
-import { toast } from "sonner";
-import type { ComponentProps } from "react";
 
 interface LoginWithPasskeyProps {
   variant?: ComponentProps<typeof Button>["variant"];
   showHelperText?: boolean;
 }
 
-export function LoginWithPasskey({ variant = "outline", showHelperText = false }: LoginWithPasskeyProps) {
+const isCancellationError = (message: string | null | undefined): boolean => {
+  if (!message) {
+    return false;
+  }
+  const lowerMessage = message.toLowerCase();
+  return (
+    lowerMessage.includes("cancel") ||
+    lowerMessage.includes("notallowed") ||
+    lowerMessage.includes("abort")
+  );
+};
+
+const isInvalidError = (message: string | null | undefined): boolean => {
+  if (!message) {
+    return false;
+  }
+  const lowerMessage = message.toLowerCase();
+  return (
+    lowerMessage.includes("invalid") ||
+    lowerMessage.includes("wrong") ||
+    lowerMessage.includes("failed")
+  );
+};
+
+const handleErrorResult = (error: { message?: string | null } | null) => {
+  if (!error) {
+    return;
+  }
+
+  if (isCancellationError(error.message)) {
+    toast.error("Passkey authentication was cancelled");
+    return;
+  }
+
+  if (isInvalidError(error.message)) {
+    toast.error("Invalid passkey. Please try again.");
+    return;
+  }
+
+  toast.error(error.message || "Passkey authentication failed");
+};
+
+const handleCaughtError = (error: unknown) => {
+  if (
+    error instanceof DOMException &&
+    (error.name === "NotAllowedError" ||
+      error.name === "AbortError" ||
+      isCancellationError(error.message))
+  ) {
+    toast.error("Passkey authentication was cancelled");
+    return;
+  }
+
+  if (error instanceof Error) {
+    if (isInvalidError(error.message)) {
+      toast.error("Invalid passkey. Please try again.");
+      return;
+    }
+    toast.error(error.message || "Something went wrong. Please try again.");
+    return;
+  }
+
+  toast.error("Something went wrong. Please try again.");
+};
+
+export function LoginWithPasskey({
+  variant = "outline",
+  showHelperText = false,
+}: LoginWithPasskeyProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   const handlePasskeySignIn = async () => {
@@ -24,45 +92,12 @@ export function LoginWithPasskey({ variant = "outline", showHelperText = false }
 
       if (result.error) {
         setIsLoading(false);
-        if (
-          result.error.message?.toLowerCase().includes("cancel") ||
-          result.error.message?.toLowerCase().includes("notallowed") ||
-          result.error.message?.toLowerCase().includes("abort")
-        ) {
-          toast.error("Passkey authentication was cancelled");
-        } else if (
-          result.error.message?.toLowerCase().includes("invalid") ||
-          result.error.message?.toLowerCase().includes("wrong") ||
-          result.error.message?.toLowerCase().includes("failed")
-        ) {
-          toast.error("Invalid passkey. Please try again.");
-        } else {
-          toast.error(result.error.message || "Passkey authentication failed");
-        }
+        handleErrorResult(result.error);
         return;
       }
     } catch (error) {
       setIsLoading(false);
-      if (
-        error instanceof DOMException &&
-        (error.name === "NotAllowedError" ||
-          error.name === "AbortError" ||
-          error.message.toLowerCase().includes("cancel"))
-      ) {
-        toast.error("Passkey authentication was cancelled");
-      } else if (error instanceof Error) {
-        if (
-          error.message.toLowerCase().includes("invalid") ||
-          error.message.toLowerCase().includes("wrong") ||
-          error.message.toLowerCase().includes("failed")
-        ) {
-          toast.error("Invalid passkey. Please try again.");
-        } else {
-          toast.error(error.message || "Something went wrong. Please try again.");
-        }
-      } else {
-        toast.error("Something went wrong. Please try again.");
-      }
+      handleCaughtError(error);
     }
   };
 
@@ -76,15 +111,14 @@ export function LoginWithPasskey({ variant = "outline", showHelperText = false }
         type="button"
         variant={variant}
       >
-        <IconFingerprint/>
+        <IconFingerprint />
         Sign in with Passkey
       </Button>
       {showHelperText && (
-        <p className="text-center font-medium py-4 text-muted-foreground text-sm">
+        <p className="py-4 text-center font-medium text-muted-foreground text-sm">
           You last used Passkey to sign in
         </p>
       )}
     </div>
   );
 }
-

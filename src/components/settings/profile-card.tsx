@@ -760,13 +760,9 @@ export function ProfileCard() {
             username={username}
             usernameAvailability={usernameAvailability}
           />
-          <EmailInputSection
-            email={profileData.email}
-            isPending={isPending}
-          />
+          <EmailInputSection email={profileData.email} isPending={isPending} />
         </div>
       </CardContent>
     </Card>
   );
 }
-
