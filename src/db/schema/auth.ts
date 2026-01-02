@@ -26,6 +26,8 @@ export const user = pgTable(
   },
   (table) => ({
     usernameIdx: index("idx_user_username").on(table.username),
+    emailIdx: index("idx_user_email").on(table.email),
+    idIdx: index("idx_user_id").on(table.id),
   })
 );
 
@@ -45,12 +47,19 @@ export const session = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
   },
-  (table) => [
-    index("session_userId_idx").on(table.userId),
-    index("session_expiresAt_idx").on(table.expiresAt),
-    index("session_userId_expiresAt_idx").on(table.userId, table.expiresAt),
-    index("session_token_expiresAt_idx").on(table.token, table.expiresAt),
-  ]
+  (table) => ({
+    userIdIdx: index("idx_session_userId").on(table.userId),
+    expiresAtIdx: index("idx_session_expiresAt").on(table.expiresAt),
+    userIdExpiresAtIdx: index("idx_session_userId_expiresAt").on(
+      table.userId,
+      table.expiresAt
+    ),
+    tokenExpiresAtIdx: index("idx_session_token_expiresAt").on(
+      table.token,
+      table.expiresAt
+    ),
+    tokenIdx: index("idx_session_token").on(table.token),
+  })
 );
 
 export const account = pgTable(
@@ -74,14 +83,14 @@ export const account = pgTable(
       .$onUpdate(() => new Date())
       .notNull(),
   },
-  (table) => [
-    index("account_userId_idx").on(table.userId),
-    uniqueIndex("account_providerId_accountId_idx").on(
+  (table) => ({
+    userIdIdx: index("idx_account_userId").on(table.userId),
+    providerIdAccountIdIdx: uniqueIndex("idx_account_providerId_accountId").on(
       table.providerId,
       table.accountId
     ),
-    index("account_providerId_idx").on(table.providerId),
-  ]
+    providerIdIdx: index("idx_account_providerId").on(table.providerId),
+  })
 );
 
 export const verification = pgTable(
@@ -97,15 +106,15 @@ export const verification = pgTable(
       .$onUpdate(() => new Date())
       .notNull(),
   },
-  (table) => [
-    index("verification_identifier_idx").on(table.identifier),
-    index("verification_expiresAt_idx").on(table.expiresAt),
-    index("verification_identifier_value_idx").on(
+  (table) => ({
+    identifierIdx: index("idx_verification_identifier").on(table.identifier),
+    expiresAtIdx: index("idx_verification_expiresAt").on(table.expiresAt),
+    identifierValueIdx: index("idx_verification_identifier_value").on(
       table.identifier,
       table.value
     ),
-    index("verification_value_idx").on(table.value),
-  ]
+    valueIdx: index("idx_verification_value").on(table.value),
+  })
 );
 
 export const userRelations = relations(user, ({ many }) => ({
