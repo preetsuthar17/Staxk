@@ -1,6 +1,6 @@
 "use client";
 
-import { IconLogout } from "@tabler/icons-react";
+import { IconLogout, IconSettings } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -37,6 +37,10 @@ export default function Home() {
       toast.error("Error during logout");
       setIsLoggingOut(false);
     }
+  };
+
+  const handleSettings = () => {
+    router.push("/settings");
   };
 
   if (isPending) {
@@ -107,16 +111,27 @@ export default function Home() {
               </div>
             )}
           </div>
-          <Button
-            className="w-full"
-            disabled={isLoggingOut}
-            loading={isLoggingOut}
-            onClick={handleLogout}
-            variant="outline"
-          >
-            <IconLogout className="size-4" />
-            Logout
-          </Button>
+          <div className="flex flex-col gap-2">
+            <Button
+              className="w-full"
+              variant="secondary"
+              onClick={handleSettings}
+              aria-label="Settings"
+            >
+              <IconSettings className="size-4" />
+              Settings
+            </Button>
+            <Button
+              className="w-full"
+              disabled={isLoggingOut}
+              loading={isLoggingOut}
+              onClick={handleLogout}
+              variant="outline"
+            >
+              <IconLogout className="size-4" />
+              Logout
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>
