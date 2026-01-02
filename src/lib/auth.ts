@@ -4,7 +4,33 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { lastLoginMethod, twoFactor, username } from "better-auth/plugins";
 import { db } from "@/db";
-import * as schema from "@/db/schema/auth";
+import {
+  account,
+  accountRelations,
+  passkeyRelations,
+  passkey as passkeyTable,
+  session,
+  sessionRelations,
+  twoFactorRelations,
+  twoFactor as twoFactorTable,
+  user,
+  userRelations,
+  verification,
+} from "@/db/schema/auth";
+
+const schema = {
+  user,
+  session,
+  account,
+  verification,
+  passkey: passkeyTable,
+  twoFactor: twoFactorTable,
+  userRelations,
+  sessionRelations,
+  accountRelations,
+  passkeyRelations,
+  twoFactorRelations,
+};
 
 const USERNAME_REGEX = /^[a-zA-Z0-9_.]+$/;
 const HTTP_PROTOCOL_REGEX = /^https?:\/\//;

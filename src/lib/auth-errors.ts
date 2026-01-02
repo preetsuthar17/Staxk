@@ -45,7 +45,8 @@ const ERROR_MESSAGES: Record<AuthErrorCode, string> = {
   INVALID_PASSWORD: "Invalid password",
   INVALID_EMAIL: "Invalid email address",
   INVALID_EMAIL_OR_PASSWORD: "Invalid email or password",
-  SOCIAL_ACCOUNT_ALREADY_LINKED: "This account is already linked to another user",
+  SOCIAL_ACCOUNT_ALREADY_LINKED:
+    "This account is already linked to another user",
   PROVIDER_NOT_FOUND: "Authentication provider not found",
   INVALID_TOKEN: "Invalid or expired token",
   ID_TOKEN_NOT_SUPPORTED: "ID token not supported for this provider",
@@ -63,55 +64,75 @@ const ERROR_MESSAGES: Record<AuthErrorCode, string> = {
   USER_ALREADY_HAS_PASSWORD: "User already has a password set",
 };
 
+function getContextualErrorMessage(
+  errorCode: AuthErrorCode,
+  context: AuthErrorContext
+): string | null {
+  if (!context) {
+    return null;
+  }
+
+  if (
+    (errorCode === "USER_NOT_FOUND" ||
+      errorCode === "USER_EMAIL_NOT_FOUND" ||
+      errorCode === "CREDENTIAL_ACCOUNT_NOT_FOUND") &&
+    context.type === "email"
+  ) {
+    return "User not found with that email";
+  }
+
+  if (
+    (errorCode === "USER_NOT_FOUND" ||
+      errorCode === "CREDENTIAL_ACCOUNT_NOT_FOUND") &&
+    context.type === "username"
+  ) {
+    return "User not found with that username";
+  }
+
+  if (errorCode === "PROVIDER_NOT_FOUND" && context.type === "social") {
+    return `Authentication provider "${context.provider}" is not available`;
+  }
+
+  if (errorCode === "FAILED_TO_GET_USER_INFO" && context.type === "social") {
+    return `Failed to retrieve information from ${context.provider}. Please try again.`;
+  }
+
+  return null;
+}
+
+function getMessageFromErrorText(
+  message: string,
+  context?: AuthErrorContext
+): string {
+  if (
+    context?.type === "email" &&
+    (message.toLowerCase().includes("user not found") ||
+      message.toLowerCase().includes("no user found") ||
+      message.toLowerCase().includes("user does not exist"))
+  ) {
+    return "User not found with that email";
+  }
+  return message;
+}
+
 export function getAuthErrorMessage(
   error: AuthError | null | undefined,
-  context?: AuthErrorContext,
+  context?: AuthErrorContext
 ): string {
   if (!error) {
     return "An error occurred. Please try again.";
   }
 
   if (!error.code && error.message) {
-    if (
-      context?.type === "email" &&
-      (error.message.toLowerCase().includes("user not found") ||
-        error.message.toLowerCase().includes("no user found") ||
-        error.message.toLowerCase().includes("user does not exist"))
-    ) {
-      return `User not found with that email`;
-    }
-    return error.message;
+    return getMessageFromErrorText(error.message, context);
   }
 
   const errorCode = error.code as AuthErrorCode | undefined;
 
   if (errorCode && context) {
-    if (
-      (errorCode === "USER_NOT_FOUND" ||
-        errorCode === "USER_EMAIL_NOT_FOUND" ||
-        errorCode === "CREDENTIAL_ACCOUNT_NOT_FOUND") &&
-      context.type === "email"
-    ) {
-      return `User not found with that email`;
-    }
-
-    if (
-      (errorCode === "USER_NOT_FOUND" ||
-        errorCode === "CREDENTIAL_ACCOUNT_NOT_FOUND") &&
-      context.type === "username"
-    ) {
-      return `User not found with that username`;
-    }
-
-    if (errorCode === "PROVIDER_NOT_FOUND" && context.type === "social") {
-      return `Authentication provider "${context.provider}" is not available`;
-    }
-
-    if (
-      errorCode === "FAILED_TO_GET_USER_INFO" &&
-      context.type === "social"
-    ) {
-      return `Failed to retrieve information from ${context.provider}. Please try again.`;
+    const contextualMessage = getContextualErrorMessage(errorCode, context);
+    if (contextualMessage) {
+      return contextualMessage;
     }
   }
 
@@ -121,4 +142,3 @@ export function getAuthErrorMessage(
 
   return error.message || "An error occurred. Please try again.";
 }
-

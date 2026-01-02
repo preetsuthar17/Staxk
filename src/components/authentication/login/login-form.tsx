@@ -110,7 +110,11 @@ export function LoginForm() {
       }
 
       // Check if 2FA verification is required
-      if (result.data && "twoFactorRedirect" in result.data && result.data.twoFactorRedirect) {
+      if (
+        result.data &&
+        "twoFactorRedirect" in result.data &&
+        result.data.twoFactorRedirect
+      ) {
         router.push("/two-factor-verify");
         return;
       }
@@ -119,7 +123,7 @@ export function LoginForm() {
       router.refresh();
     } catch (error) {
       const errorMessage = getAuthErrorMessage(
-        error as { code?: string; message?: string } | null,
+        error as { code?: string; message?: string } | null
       );
       toast.error(errorMessage);
     } finally {

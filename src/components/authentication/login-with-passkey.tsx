@@ -38,10 +38,12 @@ const isInvalidError = (message: string | null | undefined): boolean => {
   );
 };
 
-const handleErrorResult = (error: {
-  code?: string;
-  message?: string | null;
-} | null) => {
+const handleErrorResult = (
+  error: {
+    code?: string;
+    message?: string | null;
+  } | null
+) => {
   if (!error) {
     return;
   }
@@ -77,10 +79,7 @@ const handleCaughtError = (error: unknown) => {
       return;
     }
 
-    const errorMessage = getAuthErrorMessage(
-      { message: error.message },
-      null,
-    );
+    const errorMessage = getAuthErrorMessage({ message: error.message }, null);
     toast.error(errorMessage);
     return;
   }
@@ -109,7 +108,11 @@ export function LoginWithPasskey({
       }
 
       // Check if 2FA verification is required
-      if (result.data && "twoFactorRedirect" in result.data && result.data.twoFactorRedirect) {
+      if (
+        result.data &&
+        "twoFactorRedirect" in result.data &&
+        result.data.twoFactorRedirect
+      ) {
         router.push("/two-factor-verify");
         return;
       }

@@ -156,7 +156,7 @@ export function SignUpForm() {
         `/api/email/check?email=${encodeURIComponent(email)}`
       );
 
-      let data;
+      let data: { available?: boolean; error?: string } | null = null;
       try {
         const text = await response.text();
         if (!text) {
@@ -182,7 +182,7 @@ export function SignUpForm() {
         return false;
       }
 
-      if (data.available === false) {
+      if (data && data.available === false) {
         toast.error("Email is already in use");
         return false;
       }
@@ -266,7 +266,7 @@ export function SignUpForm() {
     } catch (error) {
       const errorMessage = getAuthErrorMessage(
         error as { code?: string; message?: string } | null,
-        { type: "signup" },
+        { type: "signup" }
       );
       toast.error(errorMessage);
     } finally {

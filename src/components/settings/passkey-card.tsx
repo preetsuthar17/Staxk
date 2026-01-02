@@ -199,7 +199,7 @@ export function PasskeyCard() {
         setShowRenameDialog(false);
         setRenamingId(null);
         setRenameValue("");
-      } catch (_error) {  
+      } catch (_error) {
         setPasskeys(previousPasskeys);
         toast.error("An error occurred while renaming passkey");
       } finally {

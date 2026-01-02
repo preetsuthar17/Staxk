@@ -1,6 +1,6 @@
 "use client";
 
-import { IconCopy, IconEye, IconEyeOff, IconRefresh } from "@tabler/icons-react";
+import { IconCopy, IconEye, IconEyeOff } from "@tabler/icons-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import QRCode from "react-qr-code";
 import { toast } from "sonner";
@@ -31,14 +31,264 @@ import {
 } from "@/components/ui/dialog";
 import { FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { authClient } from "@/lib/auth-client";
 
+interface EnablePasswordFormProps {
+  isEnabling: boolean;
+  password: string;
+  passwordError: string | null;
+  showPassword: boolean;
+  onPasswordChange: (value: string) => void;
+  onShowPasswordToggle: () => void;
+  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+  onCancel: () => void;
+}
+
+function EnablePasswordForm({
+  isEnabling,
+  password,
+  passwordError,
+  showPassword,
+  onPasswordChange,
+  onShowPasswordToggle,
+  onSubmit,
+  onCancel,
+}: EnablePasswordFormProps) {
+  return (
+    <form onSubmit={onSubmit}>
+      <DialogHeader>
+        <DialogTitle>Enable Two-Factor Authentication</DialogTitle>
+        <DialogDescription>
+          Enter your password to begin setting up two-factor authentication.
+        </DialogDescription>
+      </DialogHeader>
+      <div className="flex flex-col gap-4 py-4">
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="enable-password">Password</Label>
+          <div className="flex gap-0.5">
+            <Input
+              aria-describedby={
+                passwordError ? "enable-password-error" : undefined
+              }
+              aria-invalid={!!passwordError}
+              autoComplete="current-password"
+              className="flex-1"
+              disabled={isEnabling}
+              id="enable-password"
+              onChange={(e) => {
+                onPasswordChange(e.target.value);
+              }}
+              placeholder="Enter your password…"
+              type={showPassword ? "text" : "password"}
+              value={password}
+            />
+            <Button
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              className="size-10 shrink-0"
+              disabled={isEnabling}
+              onClick={onShowPasswordToggle}
+              size="icon"
+              tabIndex={-1}
+              type="button"
+              variant="outline"
+            >
+              {showPassword ? (
+                <IconEyeOff className="size-4" />
+              ) : (
+                <IconEye className="size-4" />
+              )}
+            </Button>
+          </div>
+          {passwordError && (
+            <FieldError
+              errors={[{ message: passwordError }]}
+              id="enable-password-error"
+            />
+          )}
+        </div>
+      </div>
+      <DialogFooter>
+        <Button
+          disabled={isEnabling}
+          onClick={onCancel}
+          type="button"
+          variant="outline"
+        >
+          Cancel
+        </Button>
+        <Button disabled={isEnabling} loading={isEnabling} type="submit">
+          Continue
+        </Button>
+      </DialogFooter>
+    </form>
+  );
+}
+
+interface VerifyTotpStepProps {
+  isEnabling: boolean;
+  totpCode: string;
+  totpError: string | null;
+  onTotpCodeChange: (value: string) => void;
+  onVerify: () => void;
+  onBack: () => void;
+}
+
+function VerifyTotpStep({
+  isEnabling,
+  totpCode,
+  totpError,
+  onTotpCodeChange,
+  onVerify,
+  onBack,
+}: VerifyTotpStepProps) {
+  return (
+    <div className="flex flex-col gap-4">
+      <DialogHeader>
+        <DialogTitle>Verify Setup</DialogTitle>
+        <DialogDescription>
+          Enter the 6-digit code from your authenticator app to verify and
+          complete the setup.
+        </DialogDescription>
+      </DialogHeader>
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="totp-code">Verification Code</Label>
+        <InputOTP
+          disabled={isEnabling}
+          maxLength={6}
+          onChange={onTotpCodeChange}
+          value={totpCode}
+        >
+          <InputOTPGroup>
+            <InputOTPSlot index={0} />
+            <InputOTPSlot index={1} />
+            <InputOTPSlot index={2} />
+            <InputOTPSlot index={3} />
+            <InputOTPSlot index={4} />
+            <InputOTPSlot index={5} />
+          </InputOTPGroup>
+        </InputOTP>
+        {totpError && <FieldError errors={[{ message: totpError }]} />}
+      </div>
+      <DialogFooter>
+        <Button
+          disabled={isEnabling}
+          onClick={onBack}
+          type="button"
+          variant="outline"
+        >
+          Back
+        </Button>
+        <Button
+          disabled={isEnabling || totpCode.length !== 6}
+          loading={isEnabling}
+          onClick={onVerify}
+          type="button"
+        >
+          Verify & Enable
+        </Button>
+      </DialogFooter>
+    </div>
+  );
+}
+
+interface ScanQRCodeStepProps {
+  isEnabling: boolean;
+  totpURI: string;
+  showSecret: boolean;
+  secret: string | null;
+  onShowSecretToggle: () => void;
+  onCopySecret: () => void;
+  onCancel: () => void;
+  onContinue: () => void;
+}
+
+function ScanQRCodeStep({
+  isEnabling,
+  totpURI,
+  showSecret,
+  secret,
+  onShowSecretToggle,
+  onCopySecret,
+  onCancel,
+  onContinue,
+}: ScanQRCodeStepProps) {
+  return (
+    <div className="flex flex-col gap-4">
+      <DialogHeader>
+        <DialogTitle>Scan QR Code</DialogTitle>
+        <DialogDescription>
+          Scan this QR code with your authenticator app (e.g., Google
+          Authenticator, Authy).
+        </DialogDescription>
+      </DialogHeader>
+      <div className="flex justify-center">
+        <div className="rounded-lg border bg-white p-4">
+          <QRCode size={256} value={totpURI} />
+        </div>
+      </div>
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          <Label htmlFor="manual-entry">Can't scan the QR code?</Label>
+          <Button
+            onClick={onShowSecretToggle}
+            size="sm"
+            type="button"
+            variant="outline"
+          >
+            {showSecret ? "Hide" : "Show"} Secret Key
+          </Button>
+        </div>
+        {showSecret && secret && (
+          <div className="flex flex-col gap-2">
+            <div className="rounded-md border bg-muted p-3">
+              <div className="flex items-center justify-between gap-2">
+                <code className="flex-1 break-all font-mono text-sm">
+                  {secret}
+                </code>
+                <Button
+                  onClick={onCopySecret}
+                  size="sm"
+                  type="button"
+                  variant="outline"
+                >
+                  <IconCopy className="size-4" />
+                  Copy
+                </Button>
+              </div>
+            </div>
+            <p className="text-muted-foreground text-xs">
+              Enter this code manually in your authenticator app if you can't
+              scan the QR code.
+            </p>
+          </div>
+        )}
+      </div>
+      <DialogFooter>
+        <Button
+          disabled={isEnabling}
+          onClick={onCancel}
+          type="button"
+          variant="outline"
+        >
+          Cancel
+        </Button>
+        <Button disabled={isEnabling} onClick={onContinue} type="button">
+          I've Scanned QR Code
+        </Button>
+      </DialogFooter>
+    </div>
+  );
+}
+
 export function TwoFactorCard() {
-  const { data: session } = authClient.useSession();
   const [isLoading, setIsLoading] = useState(true);
   const [isEnabling, setIsEnabling] = useState(false);
   const [isDisabling, setIsDisabling] = useState(false);
@@ -54,7 +304,7 @@ export function TwoFactorCard() {
   const [totpURI, setTotpURI] = useState<string | null>(null);
   const [backupCodes, setBackupCodes] = useState<string[]>([]);
   const [showPassword, setShowPassword] = useState(false);
-  const [showBackupCodes, setShowBackupCodes] = useState(false);
+  const [_showBackupCodes, setShowBackupCodes] = useState(false);
   const [showSecret, setShowSecret] = useState(false);
   const [showVerificationStep, setShowVerificationStep] = useState(false);
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
@@ -166,7 +416,7 @@ export function TwoFactorCard() {
     } finally {
       setIsEnabling(false);
     }
-  }, [totpCode, checkTwoFactorStatus]);
+  }, [totpCode, checkTwoFactorStatus, backupCodes.length]);
 
   const handleDisableClick = useCallback(() => {
     setPassword("");
@@ -205,7 +455,7 @@ export function TwoFactorCard() {
     }
   }, [password, checkTwoFactorStatus]);
 
-  const handleViewBackupCodes = useCallback(() => {
+  const _handleViewBackupCodes = useCallback(() => {
     setShowBackupCodesDialog(true);
   }, []);
 
@@ -269,7 +519,9 @@ export function TwoFactorCard() {
   }, []);
 
   const copySecret = useCallback(() => {
-    if (!totpURI) return;
+    if (!totpURI) {
+      return;
+    }
     const secret = extractSecretFromURI(totpURI);
     if (secret) {
       navigator.clipboard.writeText(secret).then(() => {
@@ -279,6 +531,87 @@ export function TwoFactorCard() {
   }, [totpURI, extractSecretFromURI]);
 
   const isLoadingState = useMemo(() => isLoading, [isLoading]);
+
+  const renderEnableDialogContent = () => {
+    if (!totpURI) {
+      return (
+        <EnablePasswordForm
+          isEnabling={isEnabling}
+          onCancel={() => {
+            setShowEnableDialog(false);
+            setPassword("");
+            setPasswordError(null);
+          }}
+          onPasswordChange={(value) => {
+            setPassword(value);
+            if (passwordError) {
+              setPasswordError(null);
+            }
+          }}
+          onShowPasswordToggle={() => setShowPassword(!showPassword)}
+          onSubmit={handleEnableSubmit}
+          password={password}
+          passwordError={passwordError}
+          showPassword={showPassword}
+        />
+      );
+    }
+
+    if (showVerificationStep) {
+      return (
+        <VerifyTotpStep
+          isEnabling={isEnabling}
+          onBack={() => {
+            setShowVerificationStep(false);
+            setTotpCode("");
+            setTotpError(null);
+          }}
+          onTotpCodeChange={(value: string) => {
+            setTotpCode(value);
+            if (totpError) {
+              setTotpError(null);
+            }
+          }}
+          onVerify={handleVerifyTotp}
+          totpCode={totpCode}
+          totpError={totpError}
+        />
+      );
+    }
+
+    return (
+      <ScanQRCodeStep
+        isEnabling={isEnabling}
+        onCancel={() => {
+          setShowEnableDialog(false);
+          setTotpCode("");
+          setTotpURI(null);
+          setPassword("");
+          setShowSecret(false);
+          setShowVerificationStep(false);
+        }}
+        onContinue={() => {
+          setShowVerificationStep(true);
+        }}
+        onCopySecret={copySecret}
+        onShowSecretToggle={() => setShowSecret(!showSecret)}
+        secret={extractSecretFromURI(totpURI)}
+        showSecret={showSecret}
+        totpURI={totpURI}
+      />
+    );
+  };
+
+  const resetEnableDialog = useCallback(() => {
+    setShowEnableDialog(false);
+    setPassword("");
+    setPasswordError(null);
+    setTotpCode("");
+    setTotpError(null);
+    setTotpURI(null);
+    setShowSecret(false);
+    setShowVerificationStep(false);
+  }, []);
 
   return (
     <>
@@ -341,238 +674,18 @@ export function TwoFactorCard() {
       <Dialog
         onOpenChange={(open) => {
           if (!open) {
-            setShowEnableDialog(false);
-            setPassword("");
-            setPasswordError(null);
-            setTotpCode("");
-            setTotpError(null);
-            setTotpURI(null);
-            setShowSecret(false);
-            setShowVerificationStep(false);
+            resetEnableDialog();
           }
         }}
         open={showEnableDialog}
       >
         <DialogContent className="max-w-md">
-          {!totpURI ? (
-            <form onSubmit={handleEnableSubmit}>
-              <DialogHeader>
-                <DialogTitle>Enable Two-Factor Authentication</DialogTitle>
-                <DialogDescription>
-                  Enter your password to begin setting up two-factor
-                  authentication.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="flex flex-col gap-4 py-4">
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="enable-password">Password</Label>
-                  <div className="flex gap-0.5">
-                    <Input
-                      aria-describedby={
-                        passwordError ? "enable-password-error" : undefined
-                      }
-                      aria-invalid={!!passwordError}
-                      autoComplete="current-password"
-                      className="flex-1"
-                      disabled={isEnabling}
-                      id="enable-password"
-                      onChange={(e) => {
-                        setPassword(e.target.value);
-                        if (passwordError) {
-                          setPasswordError(null);
-                        }
-                      }}
-                      placeholder="Enter your password…"
-                      type={showPassword ? "text" : "password"}
-                      value={password}
-                    />
-                    <Button
-                      aria-label={
-                        showPassword ? "Hide password" : "Show password"
-                      }
-                      className="size-10 shrink-0"
-                      disabled={isEnabling}
-                      onClick={() => setShowPassword(!showPassword)}
-                      size="icon"
-                      tabIndex={-1}
-                      type="button"
-                      variant="outline"
-                    >
-                      {showPassword ? (
-                        <IconEyeOff className="size-4" />
-                      ) : (
-                        <IconEye className="size-4" />
-                      )}
-                    </Button>
-                  </div>
-                  {passwordError && (
-                    <FieldError
-                      errors={[{ message: passwordError }]}
-                      id="enable-password-error"
-                    />
-                  )}
-                </div>
-              </div>
-              <DialogFooter>
-                <Button
-                  disabled={isEnabling}
-                  onClick={() => {
-                    setShowEnableDialog(false);
-                    setPassword("");
-                    setPasswordError(null);
-                  }}
-                  type="button"
-                  variant="outline"
-                >
-                  Cancel
-                </Button>
-                <Button disabled={isEnabling} loading={isEnabling} type="submit">
-                  Continue
-                </Button>
-              </DialogFooter>
-            </form>
-          ) : !showVerificationStep ? (
-            <div className="flex flex-col gap-4">
-              <DialogHeader>
-                <DialogTitle>Scan QR Code</DialogTitle>
-                <DialogDescription>
-                  Scan this QR code with your authenticator app (e.g., Google
-                  Authenticator, Authy).
-                </DialogDescription>
-              </DialogHeader>
-              <div className="flex justify-center">
-                <div className="rounded-lg border bg-white p-4">
-                  <QRCode value={totpURI || ""} size={256} />
-                </div>
-              </div>
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="manual-entry">Can't scan the QR code?</Label>
-                  <Button
-                    onClick={() => setShowSecret(!showSecret)}
-                    size="sm"
-                    type="button"
-                    variant="outline"
-                  >
-                    {showSecret ? "Hide" : "Show"} Secret Key
-                  </Button>
-                </div>
-                {showSecret && totpURI && (
-                  <div className="flex flex-col gap-2">
-                    <div className="rounded-md border bg-muted p-3">
-                      <div className="flex items-center justify-between gap-2">
-                        <code className="flex-1 break-all font-mono text-sm">
-                          {extractSecretFromURI(totpURI) || "Unable to extract secret"}
-                        </code>
-                        <Button
-                          onClick={copySecret}
-                          size="sm"
-                          type="button"
-                          variant="outline"
-                        >
-                          <IconCopy className="size-4" />
-                          Copy
-                        </Button>
-                      </div>
-                    </div>
-                    <p className="text-muted-foreground text-xs">
-                      Enter this code manually in your authenticator app if you
-                      can't scan the QR code.
-                    </p>
-                  </div>
-                )}
-              </div>
-              <DialogFooter>
-                <Button
-                  disabled={isEnabling}
-                  onClick={() => {
-                    setShowEnableDialog(false);
-                    setTotpCode("");
-                    setTotpURI(null);
-                    setPassword("");
-                    setShowSecret(false);
-                    setShowVerificationStep(false);
-                  }}
-                  type="button"
-                  variant="outline"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  disabled={isEnabling}
-                  onClick={() => {
-                    setShowVerificationStep(true);
-                  }}
-                  type="button"
-                >
-                  I've Scanned QR Code
-                </Button>
-              </DialogFooter>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-4">
-              <DialogHeader>
-                <DialogTitle>Verify Setup</DialogTitle>
-                <DialogDescription>
-                  Enter the 6-digit code from your authenticator app to verify
-                  and complete the setup.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="totp-code">Verification Code</Label>
-                <InputOTP
-                  disabled={isEnabling}
-                  maxLength={6}
-                  onChange={(value) => {
-                    setTotpCode(value);
-                    if (totpError) {
-                      setTotpError(null);
-                    }
-                  }}
-                  value={totpCode}
-                >
-                  <InputOTPGroup>
-                    <InputOTPSlot index={0} />
-                    <InputOTPSlot index={1} />
-                    <InputOTPSlot index={2} />
-                    <InputOTPSlot index={3} />
-                    <InputOTPSlot index={4} />
-                    <InputOTPSlot index={5} />
-                  </InputOTPGroup>
-                </InputOTP>
-                {totpError && (
-                  <FieldError errors={[{ message: totpError }]} />
-                )}
-              </div>
-              <DialogFooter>
-                <Button
-                  disabled={isEnabling}
-                  onClick={() => {
-                    setShowVerificationStep(false);
-                    setTotpCode("");
-                    setTotpError(null);
-                  }}
-                  type="button"
-                  variant="outline"
-                >
-                  Back
-                </Button>
-                <Button
-                  disabled={isEnabling || totpCode.length !== 6}
-                  loading={isEnabling}
-                  onClick={handleVerifyTotp}
-                  type="button"
-                >
-                  Verify & Enable
-                </Button>
-              </DialogFooter>
-            </div>
-          )}
+          {renderEnableDialogContent()}
         </DialogContent>
       </Dialog>
 
       <AlertDialog
-        onOpenChange={(open) => {
+        onOpenChange={(open: boolean) => {
           if (!open) {
             setShowDisableDialog(false);
             setPassword("");
@@ -583,7 +696,9 @@ export function TwoFactorCard() {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Disable Two-Factor Authentication?</AlertDialogTitle>
+            <AlertDialogTitle>
+              Disable Two-Factor Authentication?
+            </AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to disable two-factor authentication? This
               will make your account less secure.
@@ -613,9 +728,7 @@ export function TwoFactorCard() {
                   value={password}
                 />
                 <Button
-                  aria-label={
-                    showPassword ? "Hide password" : "Show password"
-                  }
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                   className="size-10 shrink-0"
                   disabled={isDisabling}
                   onClick={() => setShowPassword(!showPassword)}
@@ -662,7 +775,7 @@ export function TwoFactorCard() {
       </AlertDialog>
 
       <Dialog
-        onOpenChange={(open) => {
+        onOpenChange={(open: boolean) => {
           if (!open) {
             setShowBackupCodesDialog(false);
             setBackupCodes([]);
@@ -697,8 +810,8 @@ export function TwoFactorCard() {
                   </div>
                   <div className="rounded-md border bg-muted p-4">
                     <div className="flex flex-col gap-2 font-mono text-sm">
-                      {backupCodes.map((code, index) => (
-                        <div key={index}>{code}</div>
+                      {backupCodes.map((code) => (
+                        <div key={code}>{code}</div>
                       ))}
                     </div>
                   </div>
@@ -726,7 +839,7 @@ export function TwoFactorCard() {
       </Dialog>
 
       <AlertDialog
-        onOpenChange={(open) => {
+        onOpenChange={(open: boolean) => {
           if (!open) {
             setShowRegenerateDialog(false);
             setPassword("");
@@ -767,9 +880,7 @@ export function TwoFactorCard() {
                   value={password}
                 />
                 <Button
-                  aria-label={
-                    showPassword ? "Hide password" : "Show password"
-                  }
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                   className="size-10 shrink-0"
                   disabled={isGeneratingCodes}
                   onClick={() => setShowPassword(!showPassword)}

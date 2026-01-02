@@ -8,10 +8,7 @@ export async function GET(request: Request) {
   try {
     const session = await auth.api.getSession({ headers: request.headers });
 
-    return NextResponse.json(
-      { user: session?.user || null },
-      { status: 200 }
-    );
+    return NextResponse.json({ user: session?.user || null }, { status: 200 });
   } catch (error) {
     console.error("Session check error:", error);
     return NextResponse.json(
@@ -20,4 +17,3 @@ export async function GET(request: Request) {
     );
   }
 }
-

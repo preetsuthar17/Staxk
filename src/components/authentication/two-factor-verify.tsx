@@ -7,7 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
 import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth-client";
 
@@ -96,7 +100,7 @@ export function TwoFactorVerify() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex flex-col text-center items-center justify-center gap-2">
+      <div className="flex flex-col items-center justify-center gap-2 text-center">
         <h1 className="font-medium text-2xl">Two-Factor Authentication</h1>
         <p className="text-muted-foreground text-sm">
           Enter the verification code from your authenticator app to continue.
@@ -104,33 +108,7 @@ export function TwoFactorVerify() {
       </div>
 
       <form className="flex flex-col gap-8" onSubmit={handleSubmit}>
-        {!useBackupCode ? (
-          <div className="flex flex-col gap-2">
-            <InputOTP
-              className="w-full"
-              disabled={isLoading}
-              maxLength={6}
-              autoFocus
-              onChange={(value) => {
-                setTotpCode(value);
-                if (error) {
-                  setError(null);
-                }
-              }}
-              value={totpCode}
-            >
-              <InputOTPGroup className="w-full h-10">
-                <InputOTPSlot className="w-full h-10" index={0} />
-                <InputOTPSlot className="w-full h-10" index={1} />
-                <InputOTPSlot className="w-full h-10" index={2} />
-                <InputOTPSlot className="w-full h-10" index={3} />
-                <InputOTPSlot className="w-full h-10" index={4} />
-                <InputOTPSlot className="w-full h-10" index={5} />
-              </InputOTPGroup>
-            </InputOTP>
-            {error && <FieldError errors={[{ message: error }]} />}
-          </div>
-        ) : (
+        {useBackupCode ? (
           <div className="flex flex-col gap-2">
             <Label htmlFor="backup-code">Backup Code</Label>
             <Input
@@ -150,8 +128,37 @@ export function TwoFactorVerify() {
               value={backupCode}
             />
             {error && (
-              <FieldError errors={[{ message: error }]} id="backup-code-error" />
+              <FieldError
+                errors={[{ message: error }]}
+                id="backup-code-error"
+              />
             )}
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2">
+            <InputOTP
+              autoFocus
+              className="w-full"
+              disabled={isLoading}
+              maxLength={6}
+              onChange={(value) => {
+                setTotpCode(value);
+                if (error) {
+                  setError(null);
+                }
+              }}
+              value={totpCode}
+            >
+              <InputOTPGroup className="h-10 w-full">
+                <InputOTPSlot className="h-10 w-full" index={0} />
+                <InputOTPSlot className="h-10 w-full" index={1} />
+                <InputOTPSlot className="h-10 w-full" index={2} />
+                <InputOTPSlot className="h-10 w-full" index={3} />
+                <InputOTPSlot className="h-10 w-full" index={4} />
+                <InputOTPSlot className="h-10 w-full" index={5} />
+              </InputOTPGroup>
+            </InputOTP>
+            {error && <FieldError errors={[{ message: error }]} />}
           </div>
         )}
 
@@ -173,7 +180,10 @@ export function TwoFactorVerify() {
 
         <div className="flex flex-col gap-2">
           <Button
-            disabled={isLoading || (useBackupCode ? !backupCode.trim() : totpCode.length !== 6)}
+            disabled={
+              isLoading ||
+              (useBackupCode ? !backupCode.trim() : totpCode.length !== 6)
+            }
             loading={isLoading}
             type="submit"
           >
@@ -199,4 +209,3 @@ export function TwoFactorVerify() {
     </div>
   );
 }
-

@@ -9,7 +9,10 @@ import { Spinner } from "@/components/ui/spinner";
 export default function TwoFactorVerifyPage() {
   const router = useRouter();
   const [isPending, setIsPending] = useState(true);
-  const [user, setUser] = useState<{ id: string; twoFactorEnabled?: boolean } | null>(null);
+  const [user, setUser] = useState<{
+    id: string;
+    twoFactorEnabled?: boolean;
+  } | null>(null);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -54,4 +57,3 @@ export default function TwoFactorVerifyPage() {
     </div>
   );
 }
-

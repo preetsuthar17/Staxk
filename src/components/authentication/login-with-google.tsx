@@ -39,7 +39,7 @@ export function LoginWithGoogle({
       setIsLoading(false);
       const errorMessage = getAuthErrorMessage(
         error as { code?: string; message?: string } | null,
-        { type: "social", provider: "Google" },
+        { type: "social", provider: "Google" }
       );
       toast.error(errorMessage);
     }
