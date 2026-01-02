@@ -56,7 +56,7 @@ export default function SettingsLayout({ children }: SettingsLayoutProps) {
               className="flex h-8 items-center justify-center px-3.5"
               href="/"
             >
-              <span className="font-[490] text-[13px] text-sm">Go Home</span>
+              <span className="font-[490] text-sm">Go Home</span>
             </Link>
           </Button>
         </header>

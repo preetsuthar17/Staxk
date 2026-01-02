@@ -74,12 +74,12 @@ export function SettingsSidebar() {
                     >
                       <IconComponent
                         className={
-                          isActive
+                          `${isActive
                             ? "fill-current text-muted-foreground contrast-200"
-                            : undefined
+                            : ""}`
                         }
                       />
-                      <span className="font-[490] text-[13px] text-sm">
+                      <span className="font-[490] text-sm">
                         {item.title}
                       </span>
                     </SidebarMenuButton>
