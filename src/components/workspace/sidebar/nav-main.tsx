@@ -69,7 +69,7 @@ export function NavMain({ currentSlug }: NavMainProps) {
                         : ""
                     }
                   />
-                  <span className="font-[490] text-sm">{item.title}</span>
+                  <span className="font-[490] text-[13px]">{item.title}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             );

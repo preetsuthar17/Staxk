@@ -1,15 +1,14 @@
 "use client";
 
 import {
-  IconBell,
-  IconBellFilled,
+  IconAlertTriangle,
+  IconAlertTriangleFilled,
+  IconPalette,
+  IconPaletteFilled,
   IconSearch,
   IconSettings,
   IconSettingsFilled,
-  IconShield,
-  IconShieldFilled,
-  IconUser,
-  IconUserFilled,
+  IconUsers,
 } from "@tabler/icons-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -24,7 +23,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { authClient } from "@/lib/auth-client";
 import { Kbd } from "../ui/kbd";
 
 interface SearchableItem {
@@ -34,69 +32,6 @@ interface SearchableItem {
   category: string;
   type: "category" | "card";
 }
-
-const SETTINGS_INDEX: SearchableItem[] = [
-  {
-    title: "General",
-    url: "/settings",
-    category: "General",
-    type: "category",
-  },
-  {
-    title: "Appearance & Display",
-    description: "Customize your appearance and display settings.",
-    url: "/settings",
-    category: "General",
-    type: "card",
-  },
-  {
-    title: "Profile",
-    url: "/settings/profile",
-    category: "Profile",
-    type: "category",
-  },
-  {
-    title: "General Information",
-    description: "Update your profile information and avatar.",
-    url: "/settings/profile",
-    category: "Profile",
-    type: "card",
-  },
-  {
-    title: "Notifications",
-    url: "/settings/notifications",
-    category: "Notifications",
-    type: "category",
-  },
-  {
-    title: "Security",
-    url: "/settings/security",
-    category: "Security",
-    type: "category",
-  },
-  {
-    title: "Change Password",
-    description: "Update your password to keep your account secure.",
-    url: "/settings/security",
-    category: "Security",
-    type: "card",
-  },
-  {
-    title: "Two-Factor Authentication",
-    description:
-      "Add an extra layer of security to your account with two-factor authentication.",
-    url: "/settings/security",
-    category: "Security",
-    type: "card",
-  },
-  {
-    title: "Passkey",
-    description: "Manage your passkeys for passwordless authentication.",
-    url: "/settings/security",
-    category: "Security",
-    type: "card",
-  },
-];
 
 const MAC_PLATFORM_REGEX = /Mac|iPhone|iPad|iPod/;
 
@@ -134,55 +69,113 @@ function highlightText(text: string, query: string): React.ReactNode {
   });
 }
 
-export function SettingsSidebar() {
+interface WorkspaceSettingsSidebarProps {
+  workspaceSlug: string;
+}
+
+export function WorkspaceSettingsSidebar({
+  workspaceSlug,
+}: WorkspaceSettingsSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const { data: session } = authClient.useSession();
-  const _user = session?.user;
   const [searchQuery, setSearchQuery] = useState("");
   const [isResultsVisible, setIsResultsVisible] = useState(false);
   const [shouldRenderResults, setShouldRenderResults] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
+  const [isMac, setIsMac] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const isMac = useMemo(() => {
-    if (typeof window === "undefined") {
-      return false;
-    }
-    return (
+  useEffect(() => {
+    setIsMac(
       MAC_PLATFORM_REGEX.test(navigator.platform) ||
-      (navigator as { userAgentData?: { platform?: string } }).userAgentData
-        ?.platform === "macOS"
+        (navigator as { userAgentData?: { platform?: string } }).userAgentData
+          ?.platform === "macOS"
     );
   }, []);
 
-  const menuItems = [
-    {
-      title: "General",
-      url: "/settings",
-      icon: IconSettings,
-      iconFilled: IconSettingsFilled,
-    },
-    {
-      title: "Profile",
-      url: "/settings/profile",
-      icon: IconUser,
-      iconFilled: IconUserFilled,
-    },
-    {
-      title: "Notifications",
-      url: "/settings/notifications",
-      icon: IconBell,
-      iconFilled: IconBellFilled,
-    },
-    {
-      title: "Security",
-      url: "/settings/security",
-      icon: IconShield,
-      iconFilled: IconShieldFilled,
-    },
-  ];
+  const baseUrl = useMemo(() => `/${workspaceSlug}/settings`, [workspaceSlug]);
+
+  const SETTINGS_INDEX: SearchableItem[] = useMemo(
+    () => [
+      {
+        title: "General",
+        url: baseUrl,
+        category: "General",
+        type: "category",
+      },
+      {
+        title: "Customization",
+        url: `${baseUrl}/customization`,
+        category: "Customization",
+        type: "category",
+      },
+      {
+        title: "Workspace Customization",
+        description: "Customize your workspace appearance and settings.",
+        url: `${baseUrl}/customization`,
+        category: "Customization",
+        type: "card",
+      },
+      {
+        title: "Members",
+        url: `${baseUrl}/members`,
+        category: "Members",
+        type: "category",
+      },
+      {
+        title: "Manage Members",
+        description: "Add, remove, and manage workspace members.",
+        url: `${baseUrl}/members`,
+        category: "Members",
+        type: "card",
+      },
+      {
+        title: "Danger Zone",
+        url: `${baseUrl}/danger-zone`,
+        category: "Danger Zone",
+        type: "category",
+      },
+      {
+        title: "Delete Workspace",
+        description: "Permanently delete this workspace and all its data.",
+        url: `${baseUrl}/danger-zone`,
+        category: "Danger Zone",
+        type: "card",
+      },
+    ],
+    [baseUrl]
+  );
+
+  const menuItems = useMemo(
+    () => [
+      {
+        title: "General",
+        url: baseUrl,
+        icon: IconSettings,
+        iconFilled: IconSettingsFilled,
+      },
+      {
+        title: "Customization",
+        url: `${baseUrl}/customization`,
+        icon: IconPalette,
+        iconFilled: IconPaletteFilled,
+      },
+      {
+        title: "Members",
+        url: `${baseUrl}/members`,
+        icon: IconUsers,
+        iconFilled: IconUsers,
+      },
+      {
+        title: "Danger Zone",
+        url: `${baseUrl}/danger-zone`,
+        icon: IconAlertTriangle,
+        iconFilled: IconAlertTriangleFilled,
+      },
+    ],
+    [baseUrl]
+  );
 
   const searchResults = useMemo(() => {
     if (!searchQuery.trim()) {
@@ -195,7 +188,7 @@ export function SettingsSidebar() {
       const descriptionMatch = item.description?.toLowerCase().includes(query);
       return titleMatch || descriptionMatch;
     });
-  }, [searchQuery]);
+  }, [searchQuery, SETTINGS_INDEX]);
 
   const handleSearchChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -262,7 +255,7 @@ export function SettingsSidebar() {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (!pathname.startsWith("/settings")) {
+      if (!pathname.includes("/settings")) {
         return;
       }
 

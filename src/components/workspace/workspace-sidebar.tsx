@@ -69,7 +69,7 @@ export function WorkspaceSidebar({ currentSlug }: WorkspaceSidebarProps) {
         <NavMain currentSlug={currentSlug} />
       </SidebarContent>
       <SidebarFooter>
-        <NavFooter />
+        <NavFooter currentSlug={currentSlug} />
         <NavUser />
       </SidebarFooter>
       <SidebarRail />

@@ -1,8 +1,8 @@
 "use client";
 
-import { IconBuilding } from "@tabler/icons-react";
+import { IconArrowRight, IconBuilding } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -23,18 +23,35 @@ interface Workspace {
   role: "owner" | "admin" | "member";
 }
 
-function _WorkspaceCardSkeleton() {
+function WorkspaceCardSkeleton({
+  isFirst,
+  isLast,
+}: {
+  isFirst: boolean;
+  isLast: boolean;
+}) {
   return (
-    <Card>
-      <CardHeader>
+    <Card
+      className={[
+        "flex flex-row justify-between rounded-none border-b border-b-foreground/10 py-2",
+        isFirst && "rounded-t-lg",
+        isLast && "rounded-b-lg border-b-0",
+        !isLast && "border-b-0",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
+      <CardHeader className="px-2">
         <div className="flex items-center gap-3">
-          <Skeleton className="size-10 rounded" />
-          <div className="flex flex-1 flex-col gap-2">
-            <Skeleton className="h-5 w-32" />
-            <Skeleton className="h-4 w-48" />
+          <Skeleton className="size-8 rounded-md" />
+          <div className="flex flex-1 flex-col gap-1">
+            <Skeleton className="h-4 w-32" />
           </div>
         </div>
       </CardHeader>
+      <CardContent className="px-2">
+        <Skeleton className="size-8 rounded-md" />
+      </CardContent>
     </Card>
   );
 }
@@ -77,7 +94,7 @@ export default function WorkspacesPage() {
     router.push(`/${slug}`);
   };
 
-  if (isSessionPending || isLoading) {
+  if (isSessionPending) {
     return (
       <div className="flex min-h-screen items-center justify-center p-4 font-sans">
         <div className="flex flex-col items-center gap-4">
@@ -91,75 +108,77 @@ export default function WorkspacesPage() {
     return null;
   }
 
-  if (workspaces.length === 0) {
-    return (
-      <div className="flex min-h-screen items-center justify-center p-4 font-sans">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>No workspaces</CardTitle>
-            <CardDescription>
-              You don't have any workspaces yet. Create one to get started.
-            </CardDescription>
+  let workspaceContent: ReactNode = null;
+  if (isLoading) {
+    workspaceContent = (
+      <>
+        <WorkspaceCardSkeleton isFirst={true} isLast={false} />
+        <WorkspaceCardSkeleton isFirst={false} isLast={false} />
+        <WorkspaceCardSkeleton isFirst={false} isLast={true} />
+      </>
+    );
+  } else if (workspaces.length === 0) {
+    workspaceContent = (
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>No workspaces</CardTitle>
+          <CardDescription>
+            You don't have any workspaces yet. Create one to get started.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button className="w-full" onClick={() => router.push("/onboarding")}>
+            Create Workspace
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  } else {
+    workspaceContent = workspaces.map((workspace, idx) => {
+      const isFirst = idx === 0;
+      const isLast = idx === workspaces.length - 1;
+      return (
+        <Card
+          className={[
+            "flex cursor-pointer flex-row justify-between rounded-none border-b border-b-foreground/10 py-2 transition-colors hover:bg-accent",
+            isFirst && "rounded-t-lg",
+            isLast && "rounded-b-lg border-b-0",
+            !isLast && "border-b-0",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+          key={workspace.id}
+          onClick={() => handleWorkspaceSelect(workspace.slug)}
+        >
+          <CardHeader className="px-2">
+            <div className="flex items-center gap-3">
+              <div className="flex size-8 items-center justify-center rounded-md bg-primary/10">
+                <IconBuilding className="size-4 text-primary" />
+              </div>
+              <div className="flex flex-1 flex-col gap-1">
+                <CardTitle className="font-[490] text-base">
+                  {workspace.name}
+                </CardTitle>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent>
-            <Button
-              className="w-full"
-              onClick={() => router.push("/onboarding")}
-            >
-              Create Workspace
+          <CardContent className="px-2">
+            <Button size="icon-sm" variant="outline">
+              <IconArrowRight className="size-4" />
             </Button>
           </CardContent>
         </Card>
-      </div>
-    );
+      );
+    });
   }
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4 font-sans">
-      <div className="flex w-full max-w-4xl flex-col gap-6">
+      <div className="flex w-full max-w-xs flex-col gap-6">
         <div className="flex flex-col gap-2 text-center">
-          <h1 className="font-semibold text-3xl">Select a workspace</h1>
-          <p className="text-lg text-muted-foreground">
-            Choose a workspace to continue
-          </p>
+          <h1 className="font-medium text-xl">Select a workspace</h1>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {workspaces.map((workspace) => (
-            <Card
-              className="cursor-pointer transition-colors hover:bg-accent"
-              key={workspace.id}
-              onClick={() => handleWorkspaceSelect(workspace.slug)}
-            >
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <div className="flex size-10 items-center justify-center rounded-md bg-primary/10">
-                    <IconBuilding className="size-5 text-primary" />
-                  </div>
-                  <div className="flex flex-1 flex-col gap-1">
-                    <CardTitle className="font-[490] text-base">
-                      {workspace.name}
-                    </CardTitle>
-                    {workspace.description && (
-                      <CardDescription className="text-xs">
-                        {workspace.description}
-                      </CardDescription>
-                    )}
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground text-xs capitalize">
-                    {workspace.role}
-                  </span>
-                  <Button size="sm" variant="ghost">
-                    Open
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <div className="flex flex-col">{workspaceContent}</div>
       </div>
     </div>
   );
