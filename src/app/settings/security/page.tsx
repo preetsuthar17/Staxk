@@ -3,6 +3,7 @@
 import { LogoutButton } from "@/components/authentication/logout-button";
 import { ChangePasswordCard } from "@/components/settings/change-password-card";
 import { PasskeyCard } from "@/components/settings/passkey-card";
+import { SessionsCard } from "@/components/settings/sessions-card";
 import { TwoFactorCard } from "@/components/settings/two-factor-card";
 
 export default function SecuritySettingsPage() {
@@ -15,6 +16,7 @@ export default function SecuritySettingsPage() {
         <ChangePasswordCard />
         <TwoFactorCard />
         <PasskeyCard />
+        <SessionsCard />
         <LogoutButton />
       </div>
     </div>
