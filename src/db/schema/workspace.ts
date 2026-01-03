@@ -14,6 +14,7 @@ export const workspace = pgTable(
     id: text("id").primaryKey(),
     name: text("name").notNull(),
     slug: text("slug").notNull().unique(),
+    logo: text("logo"),
     description: text("description"),
     ownerId: text("owner_id")
       .notNull()

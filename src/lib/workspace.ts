@@ -6,6 +6,7 @@ export interface WorkspaceData {
   id: string;
   name: string;
   slug: string;
+  logo: string | null;
   description: string | null;
   role: "owner" | "admin" | "member";
 }
@@ -23,6 +24,7 @@ export async function getUserWorkspaces(
       id: workspace.id,
       name: workspace.name,
       slug: workspace.slug,
+      logo: workspace.logo,
       description: workspace.description,
       role: workspaceMember.role,
     })
@@ -48,6 +50,7 @@ export async function getWorkspaceBySlug(
       id: workspace.id,
       name: workspace.name,
       slug: workspace.slug,
+      logo: workspace.logo,
       description: workspace.description,
       role: workspaceMember.role,
     })
@@ -72,6 +75,7 @@ export async function getUserDefaultWorkspace(
       id: workspace.id,
       name: workspace.name,
       slug: workspace.slug,
+      logo: workspace.logo,
       description: workspace.description,
       role: workspaceMember.role,
     })
