@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq, ne } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { workspace } from "@/db/schema/workspace";
@@ -13,6 +13,7 @@ const MAX_SLUG_LENGTH = 50;
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const slug = searchParams.get("slug");
+  const excludeWorkspaceId = searchParams.get("excludeWorkspaceId");
 
   if (!slug) {
     return NextResponse.json({ error: "Slug is required" }, { status: 400 });
@@ -29,10 +30,15 @@ export async function GET(request: Request) {
   }
 
   try {
+    const conditions = [eq(workspace.slug, normalizedSlug)];
+    if (excludeWorkspaceId) {
+      conditions.push(ne(workspace.id, excludeWorkspaceId));
+    }
+
     const existingWorkspace = await db
       .select({ slug: workspace.slug })
       .from(workspace)
-      .where(eq(workspace.slug, normalizedSlug))
+      .where(and(...conditions))
       .limit(1);
 
     return NextResponse.json({
