@@ -19,6 +19,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CreateWorkspaceDialog } from "./create-workspace-dialog";
 
@@ -27,6 +28,7 @@ interface Workspace {
   name: string;
   slug: string;
   description: string | null;
+   logo: string | null;
   role: "owner" | "admin" | "member";
 }
 
@@ -132,9 +134,27 @@ export function WorkspaceSwitcher({
                 className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 size="lg"
               >
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <IconBuilding className="size-4" />
-                </div>
+                <Avatar
+                  className="bg-sidebar-primary text-sidebar-primary-foreground"
+                  size="default"
+                >
+                  {activeWorkspace.logo ? (
+                    <AvatarImage
+                      alt={`${activeWorkspace.name} logo`}
+                      src={activeWorkspace.logo}
+                    />
+                  ) : (
+                    <AvatarFallback>
+                      <IconBuilding
+                        aria-hidden="true"
+                        className="size-4"
+                      />
+                      <span className="sr-only">
+                        {activeWorkspace.name}
+                      </span>
+                    </AvatarFallback>
+                  )}
+                </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">
                     {activeWorkspace.name}
@@ -163,9 +183,22 @@ export function WorkspaceSwitcher({
                   key={workspace.id}
                   onClick={() => handleWorkspaceChange(workspace.slug)}
                 >
-                  <div className="flex size-6 items-center justify-center rounded-md border">
-                    <IconBuilding className="size-3.5 shrink-0" />
-                  </div>
+                  <Avatar size="sm">
+                    {workspace.logo ? (
+                      <AvatarImage
+                        alt={`${workspace.name} logo`}
+                        src={workspace.logo}
+                      />
+                    ) : (
+                      <AvatarFallback className="rounded-md">
+                        <IconBuilding
+                          aria-hidden="true"
+                          className="size-3.5 shrink-0"
+                        />
+                        <span className="sr-only">{workspace.name}</span>
+                      </AvatarFallback>
+                    )}
+                  </Avatar>
                   {workspace.name}
                   <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut>
                 </DropdownMenuItem>

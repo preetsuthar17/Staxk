@@ -18,6 +18,7 @@ interface Workspace {
   name: string;
   slug: string;
   description: string | null;
+  logo: string | null;
   role: "owner" | "admin" | "member";
 }
 
