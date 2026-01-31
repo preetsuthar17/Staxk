@@ -15,7 +15,7 @@ interface IssueCardProps {
 }
 
 export function IssueCard({
-  id,
+  id: _id,
   number,
   title,
   status,

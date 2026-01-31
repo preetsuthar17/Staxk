@@ -118,7 +118,7 @@ export function WorkspaceSettingsSidebar({
 
   useEffect(() => {
     fetchTeams();
-  }, [fetchTeams, pathname]);
+  }, [fetchTeams]);
 
   useEffect(() => {
     const handleFocus = () => {

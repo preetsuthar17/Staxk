@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Empty, EmptyDescription, EmptyTitle } from "@/components/ui/empty";
 import { Separator } from "@/components/ui/separator";
 import type { ProjectData } from "@/lib/project";
+import { Button } from "../ui/button";
 import { ProjectRow } from "./project-row";
 
 interface ProjectListViewProps {
@@ -35,13 +36,9 @@ export function ProjectListView({
           Create your first project to start organizing work.
         </EmptyDescription>
         {onCreateProject && (
-          <button
-            className="mt-2 text-primary text-sm hover:underline"
-            onClick={onCreateProject}
-            type="button"
-          >
+          <Button onClick={onCreateProject} variant="link">
             Create a project
-          </button>
+          </Button>
         )}
       </Empty>
     );

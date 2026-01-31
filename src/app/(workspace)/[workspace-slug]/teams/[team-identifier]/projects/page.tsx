@@ -131,13 +131,9 @@ export default function TeamProjectsPage() {
             Projects assigned to {team.name} will appear here. Create a new
             project or assign this team to an existing one.
           </EmptyDescription>
-          <button
-            className="mt-2 text-primary text-sm hover:underline"
-            onClick={() => setCreateDialogOpen(true)}
-            type="button"
-          >
+          <Button onClick={() => setCreateDialogOpen(true)} variant="link">
             Create a project
-          </button>
+          </Button>
         </Empty>
       ) : (
         <ProjectListView

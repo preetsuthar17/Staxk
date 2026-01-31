@@ -23,6 +23,107 @@ const ERRORS = {
   ),
 };
 
+interface CreateProjectValidated {
+  workspaceId: string;
+  trimmedName: string;
+  normalizedIdentifier: string;
+  trimmedDescription: string | null;
+  trimmedIcon: string | null;
+  trimmedColor: string | null;
+  status: "active" | "archived" | "completed";
+  teamIds: string[];
+}
+
+function validateCreateProjectBody(
+  body: {
+    workspaceSlug?: string;
+    name?: string;
+    identifier?: string;
+    description?: string;
+    icon?: string;
+    color?: string;
+    status?: string;
+    teamIds?: string[];
+  },
+  workspaceId: string
+): NextResponse | CreateProjectValidated {
+  const {
+    workspaceSlug,
+    name,
+    identifier,
+    description,
+    icon,
+    color,
+    status = "active",
+    teamIds = [],
+  } = body;
+
+  if (!(workspaceSlug && name && identifier)) {
+    return NextResponse.json(
+      { error: "Workspace slug, name, and identifier are required" },
+      { status: 400 }
+    );
+  }
+
+  const trimmedName = name.trim();
+  const normalizedIdentifier = identifier.trim().toUpperCase();
+  const trimmedDescription = description?.trim() || null;
+  const trimmedIcon = icon?.trim() || null;
+  const trimmedColor = color?.trim() || null;
+
+  if (
+    trimmedName.length < MIN_NAME_LENGTH ||
+    trimmedName.length > MAX_NAME_LENGTH
+  ) {
+    return NextResponse.json(
+      {
+        error: `Name must be between ${MIN_NAME_LENGTH} and ${MAX_NAME_LENGTH} characters`,
+      },
+      { status: 400 }
+    );
+  }
+
+  if (!IDENTIFIER_REGEX.test(normalizedIdentifier)) {
+    return NextResponse.json(
+      {
+        error:
+          "Identifier must be 2-6 uppercase letters or numbers (e.g., PROJ, WEB)",
+      },
+      { status: 400 }
+    );
+  }
+
+  if (
+    trimmedDescription &&
+    trimmedDescription.length > MAX_DESCRIPTION_LENGTH
+  ) {
+    return NextResponse.json(
+      {
+        error: `Description must be less than ${MAX_DESCRIPTION_LENGTH} characters`,
+      },
+      { status: 400 }
+    );
+  }
+
+  if (!["active", "archived", "completed"].includes(status)) {
+    return NextResponse.json(
+      { error: "Invalid status. Must be active, archived, or completed" },
+      { status: 400 }
+    );
+  }
+
+  return {
+    workspaceId,
+    trimmedName,
+    normalizedIdentifier,
+    trimmedDescription,
+    trimmedIcon,
+    trimmedColor,
+    status: status as "active" | "archived" | "completed",
+    teamIds,
+  };
+}
+
 export async function POST(request: Request) {
   try {
     const sessionData = await auth.api.getSession({
@@ -42,7 +143,7 @@ export async function POST(request: Request) {
       description?: string;
       icon?: string;
       color?: string;
-      status?: "active" | "archived" | "completed";
+      status?: string;
       teamIds?: string[];
     };
 
@@ -50,24 +151,6 @@ export async function POST(request: Request) {
       body = await request.json();
     } catch {
       return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
-    }
-
-    const {
-      workspaceSlug,
-      name,
-      identifier,
-      description,
-      icon,
-      color,
-      status = "active",
-      teamIds = [],
-    } = body;
-
-    if (!(workspaceSlug && name && identifier)) {
-      return NextResponse.json(
-        { error: "Workspace slug, name, and identifier are required" },
-        { status: 400 }
-      );
     }
 
     const workspaceResult = await db
@@ -83,7 +166,7 @@ export async function POST(request: Request) {
           eq(workspaceMember.userId, userId)
         )
       )
-      .where(eq(workspace.slug, workspaceSlug))
+      .where(eq(workspace.slug, body.workspaceSlug ?? ""))
       .limit(1);
 
     if (workspaceResult.length === 0) {
@@ -102,52 +185,20 @@ export async function POST(request: Request) {
       );
     }
 
-    const trimmedName = name.trim();
-    const normalizedIdentifier = identifier.trim().toUpperCase();
-    const trimmedDescription = description?.trim() || null;
-    const trimmedIcon = icon?.trim() || null;
-    const trimmedColor = color?.trim() || null;
-
-    if (
-      trimmedName.length < MIN_NAME_LENGTH ||
-      trimmedName.length > MAX_NAME_LENGTH
-    ) {
-      return NextResponse.json(
-        {
-          error: `Name must be between ${MIN_NAME_LENGTH} and ${MAX_NAME_LENGTH} characters`,
-        },
-        { status: 400 }
-      );
+    const validated = validateCreateProjectBody(body, workspaceId);
+    if (validated instanceof NextResponse) {
+      return validated;
     }
 
-    if (!IDENTIFIER_REGEX.test(normalizedIdentifier)) {
-      return NextResponse.json(
-        {
-          error:
-            "Identifier must be 2-6 uppercase letters or numbers (e.g., PROJ, WEB)",
-        },
-        { status: 400 }
-      );
-    }
-
-    if (
-      trimmedDescription &&
-      trimmedDescription.length > MAX_DESCRIPTION_LENGTH
-    ) {
-      return NextResponse.json(
-        {
-          error: `Description must be less than ${MAX_DESCRIPTION_LENGTH} characters`,
-        },
-        { status: 400 }
-      );
-    }
-
-    if (!["active", "archived", "completed"].includes(status)) {
-      return NextResponse.json(
-        { error: "Invalid status. Must be active, archived, or completed" },
-        { status: 400 }
-      );
-    }
+    const {
+      trimmedName,
+      normalizedIdentifier,
+      trimmedDescription,
+      trimmedIcon,
+      trimmedColor,
+      status,
+      teamIds,
+    } = validated;
 
     const existingProject = await db
       .select({ identifier: project.identifier })
@@ -194,7 +245,7 @@ export async function POST(request: Request) {
         icon: trimmedIcon,
         color: trimmedColor,
         status,
-        workspaceId,
+        workspaceId: validated.workspaceId,
         createdById: userId,
       });
 

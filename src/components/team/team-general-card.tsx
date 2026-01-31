@@ -83,7 +83,9 @@ function useTeamNameEditing(
         setShowSaved(true);
         setTimeout(() => setShowSaved(false), 2000);
       } catch (error) {
-        if (error instanceof Error && error.name === "AbortError") return;
+        if (error instanceof Error && error.name === "AbortError") {
+          return;
+        }
         toast.error("Failed to update team name");
       } finally {
         setIsSaving(false);
@@ -110,8 +112,12 @@ function useTeamNameEditing(
 
   useEffect(() => {
     return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      if (abortControllerRef.current) abortControllerRef.current.abort();
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
     };
   }, []);
 
@@ -165,7 +171,9 @@ function useTeamIdentifierEditing(
           setIsAvailable(data.available);
         }
       } catch (error) {
-        if (error instanceof Error && error.name === "AbortError") return;
+        if (error instanceof Error && error.name === "AbortError") {
+          return;
+        }
       } finally {
         setIsChecking(false);
       }
@@ -242,7 +250,7 @@ function useTeamIdentifierEditing(
       setIsEditing(false);
       toast.success("Identifier updated. Redirecting...");
       window.location.href = `/${workspaceSlug}/settings/team/${normalized}`;
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to update identifier");
     } finally {
       setIsSaving(false);
@@ -251,8 +259,12 @@ function useTeamIdentifierEditing(
 
   useEffect(() => {
     return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      if (abortControllerRef.current) abortControllerRef.current.abort();
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
     };
   }, []);
 
@@ -283,7 +295,9 @@ function useTeamDescriptionEditing(
 
   const saveDescription = useCallback(
     async (newDescription: string) => {
-      if (newDescription.length > MAX_DESCRIPTION_LENGTH) return;
+      if (newDescription.length > MAX_DESCRIPTION_LENGTH) {
+        return;
+      }
 
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
@@ -312,7 +326,9 @@ function useTeamDescriptionEditing(
         setShowSaved(true);
         setTimeout(() => setShowSaved(false), 2000);
       } catch (error) {
-        if (error instanceof Error && error.name === "AbortError") return;
+        if (error instanceof Error && error.name === "AbortError") {
+          return;
+        }
         toast.error("Failed to update description");
       } finally {
         setIsSaving(false);
@@ -339,8 +355,12 @@ function useTeamDescriptionEditing(
 
   useEffect(() => {
     return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      if (abortControllerRef.current) abortControllerRef.current.abort();
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
     };
   }, []);
 

@@ -35,9 +35,10 @@ const MIN_NAME_LENGTH = 1;
 const MAX_NAME_LENGTH = 100;
 const MAX_DESCRIPTION_LENGTH = 500;
 const IDENTIFIER_DEBOUNCE_MS = 300;
+const WORD_SPLIT_REGEX = /\s+/;
 
 function generateIdentifierFromName(name: string): string {
-  const words = name.trim().split(/\s+/);
+  const words = name.trim().split(WORD_SPLIT_REGEX);
   if (words.length === 1) {
     return words[0]
       .slice(0, 4)
@@ -352,6 +353,7 @@ export function CreateProjectDialog({
       onSuccess,
       workspaceSlug,
       selectedTeamIds,
+      selectedIcon,
     ]
   );
 

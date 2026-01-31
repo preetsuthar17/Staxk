@@ -3,6 +3,7 @@
 import { IconFolder } from "@tabler/icons-react";
 import { Empty, EmptyDescription, EmptyTitle } from "@/components/ui/empty";
 import type { ProjectData } from "@/lib/project";
+import { Button } from "../ui/button";
 import { ProjectCard } from "./project-card";
 
 interface ProjectListProps {
@@ -28,13 +29,9 @@ export function ProjectList({
           workspace.
         </EmptyDescription>
         {onCreateProject && (
-          <button
-            className="mt-2 text-primary text-sm hover:underline"
-            onClick={onCreateProject}
-            type="button"
-          >
+          <Button onClick={onCreateProject} variant="link">
             Create a project
-          </button>
+          </Button>
         )}
       </Empty>
     );

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 interface TeamAvatarProps {
@@ -49,16 +50,13 @@ export function TeamAvatar({
       }}
       title={name}
     >
-      <img
+      <Image
         alt={name}
-        aria-hidden="false"
         className="block"
-        decoding="async"
-        draggable={false}
         height={imageSize}
         loading="lazy"
         src={dicebearUrl}
-        style={{ display: "block" }}
+        unoptimized
         width={imageSize}
       />
     </span>

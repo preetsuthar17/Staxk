@@ -30,7 +30,7 @@ export function ProjectRow({
   teamCount,
   onClick,
 }: ProjectRowProps) {
-  const statusInfo = statusConfig[status];
+  const _statusInfo = statusConfig[status];
 
   return (
     <button

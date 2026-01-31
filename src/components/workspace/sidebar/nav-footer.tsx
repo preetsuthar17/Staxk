@@ -36,12 +36,12 @@ export function NavFooter({ currentSlug }: NavFooterProps) {
     {
       title: "Get Help",
       icon: IconHelp,
-      onClick: () => {},
+      onClick: () => undefined,
     },
     {
       title: "Report",
       icon: IconAlertTriangle,
-      onClick: () => {},
+      onClick: () => undefined,
     },
   ];
 

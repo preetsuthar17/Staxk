@@ -44,7 +44,9 @@ export function TeamDangerZoneCard({
   const isConfirmValid = confirmText === teamIdentifier;
 
   const handleDelete = useCallback(async () => {
-    if (!isConfirmValid) return;
+    if (!isConfirmValid) {
+      return;
+    }
 
     setIsDeleting(true);
 
@@ -64,7 +66,7 @@ export function TeamDangerZoneCard({
 
       toast.success("Team deleted successfully");
       router.push(`/${workspaceSlug}/settings`);
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to delete team");
     } finally {
       setIsDeleting(false);

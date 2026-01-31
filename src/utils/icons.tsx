@@ -6,22 +6,26 @@ const baseSvgProps = {
   xmlns: "http://www.w3.org/2000/svg",
   viewBox: "0 0 24 24",
   fill: "currentColor",
+  role: "img" as const,
 };
 
 export const IconInProgress: StatusIcon = (props) => (
-  <svg {...baseSvgProps} {...props}>
+  <svg {...baseSvgProps} aria-labelledby="icon-in-progress-title" {...props}>
+    <title id="icon-in-progress-title">In progress</title>
     <path d="M12 3.75a8.25 8.25 0 1 0 0 16.5a8.25 8.25 0 0 0 0-16.5M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75s-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12m9-5a.75.75 0 0 1 .75-.75a5.75 5.75 0 0 1 0 11.5a.75.75 0 0 1-.75-.75z" />
   </svg>
 );
 
 export const IconDone: StatusIcon = (props) => (
-  <svg {...baseSvgProps} {...props}>
+  <svg {...baseSvgProps} aria-labelledby="icon-done-title" {...props}>
+    <title id="icon-done-title">Done</title>
     <path d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75s-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12m13.523-3.308a.75.75 0 0 0-1.048.169l-3.597 4.981a.25.25 0 0 1-.391.018l-1.506-1.72a.75.75 0 1 0-1.129.987l1.506 1.721a1.75 1.75 0 0 0 2.736-.128l3.597-4.98a.75.75 0 0 0-.168-1.048" />
   </svg>
 );
 
 export const IconBacklog: StatusIcon = (props) => (
-  <svg {...baseSvgProps} {...props}>
+  <svg {...baseSvgProps} aria-labelledby="icon-backlog-title" {...props}>
+    <title id="icon-backlog-title">Backlog</title>
     <path
       d="M11.25 3a.75.75 0 0 1 .75-.75a9.7 9.7 0 0 1 3.792.765a.75.75 0 1 1-.584 1.382A8.2 8.2 0 0 0 12 3.75a.75.75 0 0 1-.75-.75m-2.06.414a.75.75 0 0 1-.398.983a8.3 8.3 0 0 0-2.626 1.77a.75.75 0 0 1-1.06-1.061a9.8 9.8 0 0 1 3.102-2.091a.75.75 0 0 1 .983.399m8.644 1.692a.75.75 0 0 1 1.06 0a9.8 9.8 0 0 1 2.091 3.102a.75.75 0 0 1-1.382.584a8.3 8.3 0 0 0-1.77-2.626a.75.75 0 0 1 0-1.06M3.998 7.809a.75.75 0 0 1 .399.983A8.2 8.2 0 0 0 3.75 12a.75.75 0 0 1-1.5 0a9.7 9.7 0 0 1 .765-3.792a.75.75 0 0 1 .983-.399M21 11.25a.75.75 0 0 1 .75.75a9.7 9.7 0 0 1-.765 3.792a.75.75 0 0 1-1.382-.584A8.2 8.2 0 0 0 20.25 12a.75.75 0 0 1 .75-.75M3.414 14.81a.75.75 0 0 1 .983.398a8.3 8.3 0 0 0 1.77 2.626a.75.75 0 0 1-1.061 1.06a9.8 9.8 0 0 1-2.091-3.102a.75.75 0 0 1 .399-.983m15.48 3.024a.75.75 0 0 1 0 1.06a9.8 9.8 0 0 1-3.102 2.091a.75.75 0 0 1-.584-1.382a8.3 8.3 0 0 0 2.626-1.77a.75.75 0 0 1 1.06 0M7.81 20.002a.75.75 0 0 1 .983-.399A8.2 8.2 0 0 0 12 20.25a.75.75 0 0 1 0 1.5a9.7 9.7 0 0 1-3.792-.765a.75.75 0 0 1-.399-.983"
       fill="currentColor"
@@ -30,14 +34,17 @@ export const IconBacklog: StatusIcon = (props) => (
 );
 
 export const IconCancelled: StatusIcon = (props) => (
-  <svg {...baseSvgProps} {...props}>
+  <svg {...baseSvgProps} aria-labelledby="icon-cancelled-title" {...props}>
+    <title id="icon-cancelled-title">Cancelled</title>
     <path d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75s-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12M9.6 7.55a.75.75 0 1 0-1.2.9L11.062 12L8.4 15.55a.75.75 0 0 0 1.2.9l2.4-3.2l2.4 3.2a.75.75 0 0 0 1.2-.9L12.938 12L15.6 8.45a.75.75 0 1 0-1.2-.9l-2.4 3.2z" />
   </svg>
 );
 
 export const IconTodo: StatusIcon = (props) => (
   <svg
+    aria-labelledby="icon-todo-title"
     fill="none"
+    role="img"
     stroke="currentColor"
     strokeLinecap="round"
     strokeLinejoin="round"
@@ -46,6 +53,7 @@ export const IconTodo: StatusIcon = (props) => (
     xmlns="http://www.w3.org/2000/svg"
     {...props}
   >
+    <title id="icon-todo-title">To do</title>
     <circle cx="12" cy="12" r="9" />
   </svg>
 );

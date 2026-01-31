@@ -91,7 +91,9 @@ export function WorkspaceMembersCard({
   );
 
   const handleRemoveMember = useCallback(async () => {
-    if (!memberToRemove) return;
+    if (!memberToRemove) {
+      return;
+    }
 
     setIsRemoving(true);
 

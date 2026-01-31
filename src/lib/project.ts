@@ -63,7 +63,9 @@ export async function getWorkspaceProjects(
 
   const teamsByProject = teamsData.reduce(
     (acc, t) => {
-      if (!acc[t.projectId]) acc[t.projectId] = [];
+      if (!acc[t.projectId]) {
+        acc[t.projectId] = [];
+      }
       acc[t.projectId].push({
         id: t.teamId,
         name: t.teamName,
@@ -120,7 +122,9 @@ export async function getTeamProjects(teamId: string): Promise<ProjectData[]> {
 
   const teamsByProject = teamsData.reduce(
     (acc, t) => {
-      if (!acc[t.projectId]) acc[t.projectId] = [];
+      if (!acc[t.projectId]) {
+        acc[t.projectId] = [];
+      }
       acc[t.projectId].push({
         id: t.teamId,
         name: t.teamName,

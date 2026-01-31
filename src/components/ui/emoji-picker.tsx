@@ -10,10 +10,10 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
-type EmojiCategory = {
+interface EmojiCategory {
   name: string;
   emojis: string[];
-};
+}
 
 const EMOJI_CATEGORIES: Record<string, EmojiCategory> = {
   smileys: {
@@ -463,14 +463,16 @@ export function EmojiPicker({
   const [activeCategory, setActiveCategory] = useState<string>("smileys");
 
   const recentEmojis = useMemo(() => {
-    if (typeof window === "undefined") return [];
+    if (typeof window === "undefined") {
+      return [];
+    }
     try {
       const stored = localStorage.getItem(RECENT_EMOJIS_KEY);
       return stored ? JSON.parse(stored) : [];
     } catch {
       return [];
     }
-  }, [open]);
+  }, []);
 
   const saveRecentEmoji = useCallback((emoji: string) => {
     try {
@@ -479,7 +481,9 @@ export function EmojiPicker({
       const filtered = recent.filter((e) => e !== emoji);
       const updated = [emoji, ...filtered].slice(0, MAX_RECENT);
       localStorage.setItem(RECENT_EMOJIS_KEY, JSON.stringify(updated));
-    } catch {}
+    } catch {
+      // Ignore storage errors
+    }
   }, []);
 
   const handleSelect = useCallback(
@@ -592,7 +596,7 @@ export function EmojiPicker({
                   {recentEmojis.map((emoji: string, index: number) => (
                     <button
                       className="flex size-8 items-center justify-center rounded text-lg transition-colors hover:bg-accent"
-                      key={`${emoji}-${index}`}
+                      key={`recent-${index}-${emoji}`}
                       onClick={() => handleSelect(emoji)}
                       type="button"
                     >
@@ -613,7 +617,7 @@ export function EmojiPicker({
                     (emoji: string, index: number) => (
                       <button
                         className="flex size-8 items-center justify-center rounded text-lg transition-colors hover:bg-accent"
-                        key={`${emoji}-${index}`}
+                        key={`${currentCategory.name}-${index}-${emoji}`}
                         onClick={() => handleSelect(emoji)}
                         type="button"
                       >

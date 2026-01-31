@@ -17,7 +17,7 @@ const CreateTeamDialog = dynamic(
 );
 
 const preloadCreateTeamDialog = () => {
-  void import("@/components/team/create-team-dialog");
+  import("@/components/team/create-team-dialog").catch(() => undefined);
 };
 
 interface TeamsClientProps {

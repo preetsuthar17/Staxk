@@ -122,18 +122,26 @@ export default function ProjectSettingsPage() {
 
   useEffect(() => {
     return () => {
-      if (nameDebounceRef.current) clearTimeout(nameDebounceRef.current);
-      if (descriptionDebounceRef.current)
+      if (nameDebounceRef.current) {
+        clearTimeout(nameDebounceRef.current);
+      }
+      if (descriptionDebounceRef.current) {
         clearTimeout(descriptionDebounceRef.current);
-      if (nameCheckmarkRef.current) clearTimeout(nameCheckmarkRef.current);
-      if (descriptionCheckmarkRef.current)
+      }
+      if (nameCheckmarkRef.current) {
+        clearTimeout(nameCheckmarkRef.current);
+      }
+      if (descriptionCheckmarkRef.current) {
         clearTimeout(descriptionCheckmarkRef.current);
+      }
     };
   }, []);
 
   const saveField = useCallback(
     async (field: string, value: string | null) => {
-      if (!project) return false;
+      if (!project) {
+        return false;
+      }
 
       try {
         const response = await fetch(
@@ -183,7 +191,9 @@ export default function ProjectSettingsPage() {
       if (success) {
         initialNameRef.current = name.trim();
         setShowNameCheckmark(true);
-        if (nameCheckmarkRef.current) clearTimeout(nameCheckmarkRef.current);
+        if (nameCheckmarkRef.current) {
+          clearTimeout(nameCheckmarkRef.current);
+        }
         nameCheckmarkRef.current = setTimeout(() => {
           setShowNameCheckmark(false);
         }, CHECKMARK_DURATION_MS);
@@ -214,8 +224,9 @@ export default function ProjectSettingsPage() {
       if (success) {
         initialDescriptionRef.current = trimmedDescription || "";
         setShowDescriptionCheckmark(true);
-        if (descriptionCheckmarkRef.current)
+        if (descriptionCheckmarkRef.current) {
           clearTimeout(descriptionCheckmarkRef.current);
+        }
         descriptionCheckmarkRef.current = setTimeout(() => {
           setShowDescriptionCheckmark(false);
         }, CHECKMARK_DURATION_MS);
@@ -251,7 +262,9 @@ export default function ProjectSettingsPage() {
   };
 
   const handleDelete = async () => {
-    if (!project || deleteConfirmText !== project.name) return;
+    if (!project || deleteConfirmText !== project.name) {
+      return;
+    }
 
     setIsDeleting(true);
 
@@ -335,19 +348,23 @@ export default function ProjectSettingsPage() {
                     disabled={isSavingIcon}
                     type="button"
                   >
-                    {isSavingIcon ? (
-                      <Spinner className="size-4" />
-                    ) : project.icon ? (
-                      project.icon
-                    ) : (
-                      <ProjectAvatar
-                        color={project.color}
-                        icon={null}
-                        identifier={project.identifier}
-                        name={project.name}
-                        size="md"
-                      />
-                    )}
+                    {(() => {
+                      if (isSavingIcon) {
+                        return <Spinner className="size-4" />;
+                      }
+                      if (project.icon) {
+                        return project.icon;
+                      }
+                      return (
+                        <ProjectAvatar
+                          color={project.color}
+                          icon={null}
+                          identifier={project.identifier}
+                          name={project.name}
+                          size="md"
+                        />
+                      );
+                    })()}
                   </button>
                 }
                 value={project.icon}

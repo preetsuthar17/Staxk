@@ -99,7 +99,9 @@ export default function ProjectDetailPage() {
 
   const saveProjectField = useCallback(
     async (field: string, value: string | null) => {
-      if (!project) return false;
+      if (!project) {
+        return false;
+      }
 
       try {
         const response = await fetch(
@@ -230,20 +232,24 @@ export default function ProjectDetailPage() {
                     disabled={isSavingIcon}
                     type="button"
                   >
-                    {isSavingIcon ? (
-                      <Spinner className="size-6" />
-                    ) : project.icon ? (
-                      <span>{project.icon}</span>
-                    ) : (
-                      <ProjectAvatar
-                        className="size-14"
-                        color={project.color}
-                        icon={null}
-                        identifier={project.identifier}
-                        name={project.name}
-                        size="lg"
-                      />
-                    )}
+                    {(() => {
+                      if (isSavingIcon) {
+                        return <Spinner className="size-6" />;
+                      }
+                      if (project.icon) {
+                        return <span>{project.icon}</span>;
+                      }
+                      return (
+                        <ProjectAvatar
+                          className="size-14"
+                          color={project.color}
+                          icon={null}
+                          identifier={project.identifier}
+                          name={project.name}
+                          size="lg"
+                        />
+                      );
+                    })()}
                     <span className="absolute -right-1 -bottom-1 hidden rounded bg-background px-1 text-[10px] text-muted-foreground shadow-sm group-hover:block">
                       {project.icon ? "Change" : "Add icon"}
                     </span>

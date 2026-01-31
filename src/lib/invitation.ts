@@ -84,7 +84,7 @@ export async function getWorkspaceInvitations(
       email: r.invitedByEmail,
       image: r.invitedByImage,
     },
-    expiresAt: r.expiresAt!,
+    expiresAt: r.expiresAt ?? new Date(),
     createdAt: r.createdAt,
   }));
 }
@@ -116,7 +116,9 @@ export async function getInvitationByToken(
     .where(eq(workspaceInvitation.token, token))
     .limit(1);
 
-  if (results.length === 0) return null;
+  if (results.length === 0) {
+    return null;
+  }
 
   const r = results[0];
   return {
@@ -137,7 +139,7 @@ export async function getInvitationByToken(
       email: r.invitedByEmail,
       image: r.invitedByImage,
     },
-    expiresAt: r.expiresAt!,
+    expiresAt: r.expiresAt ?? new Date(),
     createdAt: r.createdAt,
   };
 }
@@ -195,7 +197,7 @@ export async function getUserPendingInvitations(
       email: r.invitedByEmail,
       image: r.invitedByImage,
     },
-    expiresAt: r.expiresAt!,
+    expiresAt: r.expiresAt ?? new Date(),
     createdAt: r.createdAt,
   }));
 }

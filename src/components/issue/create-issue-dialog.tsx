@@ -372,11 +372,12 @@ export function CreateIssueDialog({
                         ))}
                       </SelectContent>
                     </Select>
-                  ) : noProjectsInTeam ? (
+                  ) : null}
+                  {!showTeamSelector && noProjectsInTeam && (
                     <p className="text-muted-foreground text-sm">
                       No projects in this team
                     </p>
-                  ) : null}
+                  )}
                 </div>
               </FieldContent>
             </Field>

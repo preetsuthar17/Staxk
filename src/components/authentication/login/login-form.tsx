@@ -68,11 +68,15 @@ export function LoginForm() {
           const available =
             await PublicKeyCredential.isConditionalMediationAvailable();
           if (available) {
-            authClient.signIn.passkey({ autoFill: true }).catch(() => {});
+            authClient.signIn
+              .passkey({ autoFill: true })
+              .catch(() => undefined);
           }
-        } catch {}
+        } catch {
+          // Conditional UI not available
+        }
       };
-      checkConditionalUI().catch(() => {});
+      checkConditionalUI().catch(() => undefined);
     }
   }, []);
 

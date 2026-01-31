@@ -92,7 +92,7 @@ export function PasskeyCard() {
   }, []);
 
   useEffect(() => {
-    fetchPasskeys().catch(() => {});
+    fetchPasskeys().catch(() => undefined);
   }, [fetchPasskeys]);
 
   const handleAddPasskey = useCallback(() => {

@@ -318,14 +318,15 @@ export function TwoFactorCard() {
       } else {
         setTwoFactorEnabled(false);
       }
-    } catch (_error) {
+    } catch {
+      // Error handled via state
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    checkTwoFactorStatus().catch(() => {});
+    checkTwoFactorStatus().catch(() => undefined);
   }, [checkTwoFactorStatus]);
 
   const handleEnableClick = useCallback(() => {

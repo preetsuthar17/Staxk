@@ -57,6 +57,115 @@ const ERRORS = {
   ),
 };
 
+interface WorkspacePatchBody {
+  name?: string;
+  slug?: string;
+  description?: string;
+}
+
+interface WorkspaceDataForPatch {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+}
+
+async function validateWorkspacePatchBody(
+  body: WorkspacePatchBody,
+  workspaceData: WorkspaceDataForPatch
+): Promise<
+  | NextResponse
+  | { updateData: Record<string, string | null>; hasChanges: boolean }
+> {
+  const updateData: Record<string, string | null> = {};
+  let hasChanges = false;
+
+  if (body.name !== undefined) {
+    const nameResult = validateWorkspaceName(body.name, workspaceData.name);
+    if (nameResult instanceof NextResponse) {
+      return nameResult;
+    }
+    if (nameResult !== null) {
+      updateData.name = nameResult;
+      hasChanges = true;
+    }
+  }
+
+  if (body.slug !== undefined) {
+    const slugResult = await validateWorkspaceSlug(
+      body.slug,
+      workspaceData.slug,
+      workspaceData.id
+    );
+    if (slugResult instanceof NextResponse) {
+      return slugResult;
+    }
+    if (slugResult !== null) {
+      updateData.slug = slugResult;
+      hasChanges = true;
+    }
+  }
+
+  if (body.description !== undefined) {
+    const trimmedDescription = body.description.trim() || null;
+    if (
+      trimmedDescription &&
+      trimmedDescription.length > MAX_DESCRIPTION_LENGTH
+    ) {
+      return ERRORS.INVALID_DESCRIPTION as NextResponse;
+    }
+    if (trimmedDescription !== workspaceData.description) {
+      updateData.description = trimmedDescription;
+      hasChanges = true;
+    }
+  }
+
+  return { updateData, hasChanges };
+}
+
+async function validateWorkspaceSlug(
+  rawSlug: string,
+  currentSlug: string,
+  workspaceId: string
+): Promise<NextResponse | string | null> {
+  const normalizedSlug = rawSlug.trim().toLowerCase();
+  if (
+    !SLUG_REGEX.test(normalizedSlug) ||
+    normalizedSlug.length < MIN_SLUG_LENGTH ||
+    normalizedSlug.length > MAX_SLUG_LENGTH
+  ) {
+    return ERRORS.INVALID_SLUG as NextResponse;
+  }
+  if (normalizedSlug === currentSlug) {
+    return null;
+  }
+  const existingWorkspace = await db
+    .select({ slug: workspace.slug })
+    .from(workspace)
+    .where(
+      and(eq(workspace.slug, normalizedSlug), ne(workspace.id, workspaceId))
+    )
+    .limit(1);
+  if (existingWorkspace.length > 0) {
+    return ERRORS.SLUG_TAKEN as NextResponse;
+  }
+  return normalizedSlug;
+}
+
+function validateWorkspaceName(
+  rawName: string,
+  currentName: string
+): NextResponse | string | null {
+  const trimmedName = rawName.trim();
+  if (
+    trimmedName.length < MIN_NAME_LENGTH ||
+    trimmedName.length > MAX_NAME_LENGTH
+  ) {
+    return ERRORS.INVALID_NAME as NextResponse;
+  }
+  return trimmedName !== currentName ? trimmedName : null;
+}
+
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ slug: string }> }
@@ -128,69 +237,20 @@ export async function PATCH(
       return ERRORS.FORBIDDEN;
     }
 
-    const updateData: {
-      name?: string;
-      slug?: string;
-      description?: string | null;
-    } = {};
+    const validated = await validateWorkspacePatchBody(body, {
+      id: workspaceData.id,
+      name: workspaceData.name,
+      slug: workspaceData.slug,
+      description: workspaceData.description,
+    });
 
-    if (body.name !== undefined) {
-      const trimmedName = body.name.trim();
-      if (
-        trimmedName.length < MIN_NAME_LENGTH ||
-        trimmedName.length > MAX_NAME_LENGTH
-      ) {
-        return ERRORS.INVALID_NAME;
-      }
-      if (trimmedName !== workspaceData.name) {
-        updateData.name = trimmedName;
-      }
+    if (validated instanceof NextResponse) {
+      return validated;
     }
 
-    if (body.slug !== undefined) {
-      const normalizedSlug = body.slug.trim().toLowerCase();
-      if (
-        !SLUG_REGEX.test(normalizedSlug) ||
-        normalizedSlug.length < MIN_SLUG_LENGTH ||
-        normalizedSlug.length > MAX_SLUG_LENGTH
-      ) {
-        return ERRORS.INVALID_SLUG;
-      }
+    const { updateData, hasChanges } = validated;
 
-      if (normalizedSlug !== workspaceData.slug) {
-        const existingWorkspace = await db
-          .select({ slug: workspace.slug })
-          .from(workspace)
-          .where(
-            and(
-              eq(workspace.slug, normalizedSlug),
-              ne(workspace.id, workspaceData.id)
-            )
-          )
-          .limit(1);
-
-        if (existingWorkspace.length > 0) {
-          return ERRORS.SLUG_TAKEN;
-        }
-
-        updateData.slug = normalizedSlug;
-      }
-    }
-
-    if (body.description !== undefined) {
-      const trimmedDescription = body.description.trim() || null;
-      if (
-        trimmedDescription &&
-        trimmedDescription.length > MAX_DESCRIPTION_LENGTH
-      ) {
-        return ERRORS.INVALID_DESCRIPTION;
-      }
-      if (trimmedDescription !== workspaceData.description) {
-        updateData.description = trimmedDescription;
-      }
-    }
-
-    if (Object.keys(updateData).length === 0) {
+    if (!hasChanges || Object.keys(updateData).length === 0) {
       const currentWorkspace = await getWorkspaceBySlug(slug, userId);
       return NextResponse.json(
         { workspace: currentWorkspace },

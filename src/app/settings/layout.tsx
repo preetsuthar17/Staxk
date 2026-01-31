@@ -79,8 +79,8 @@ export default function SettingsLayout({ children }: SettingsLayoutProps) {
             variant="outline"
           >
             <Link
-              className="flex h-7.5 items-center justify-center px-3.5"
-              href={homeUrl}
+              className="flex h-8.5 items-center justify-center px-3.5"
+              href="/"
             >
               <span className="font-[490] text-[13px]">Go Home</span>
             </Link>

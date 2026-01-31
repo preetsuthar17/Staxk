@@ -35,6 +35,63 @@ interface RouteParams {
   params: Promise<{ id: string }>;
 }
 
+function validateIssuePatchBody(body: {
+  title?: string;
+  description?: string;
+  status?: IssueStatus;
+}): NextResponse | { updates: Record<string, string | null> } {
+  const updates: Record<string, string | null> = {};
+
+  if (body.title !== undefined) {
+    const trimmedTitle = body.title.trim();
+    if (
+      trimmedTitle.length < MIN_TITLE_LENGTH ||
+      trimmedTitle.length > MAX_TITLE_LENGTH
+    ) {
+      return NextResponse.json(
+        {
+          error: `Title must be between ${MIN_TITLE_LENGTH} and ${MAX_TITLE_LENGTH} characters`,
+        },
+        { status: 400 }
+      );
+    }
+    updates.title = trimmedTitle;
+  }
+
+  if (body.description !== undefined) {
+    let trimmedDescription: string | null = null;
+    if (typeof body.description === "string") {
+      trimmedDescription = body.description.trim() || null;
+      if (
+        trimmedDescription &&
+        trimmedDescription.length > MAX_DESCRIPTION_LENGTH
+      ) {
+        return NextResponse.json(
+          {
+            error: `Description must be less than ${MAX_DESCRIPTION_LENGTH} characters`,
+          },
+          { status: 400 }
+        );
+      }
+    }
+    updates.description = trimmedDescription;
+  }
+
+  if (body.status !== undefined) {
+    if (!VALID_STATUSES.includes(body.status)) {
+      return NextResponse.json(
+        {
+          error: `Invalid status. Must be one of: ${VALID_STATUSES.join(", ")}`,
+        },
+        { status: 400 }
+      );
+    }
+    updates.status = body.status;
+  }
+
+  return { updates };
+}
+
 export async function GET(request: Request, { params }: RouteParams) {
   try {
     const sessionData = await auth.api.getSession({
@@ -114,57 +171,11 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
     }
 
-    const updates: Record<string, string | null> = {};
-
-    if (body.title !== undefined) {
-      const trimmedTitle = body.title.trim();
-      if (
-        trimmedTitle.length < MIN_TITLE_LENGTH ||
-        trimmedTitle.length > MAX_TITLE_LENGTH
-      ) {
-        return NextResponse.json(
-          {
-            error: `Title must be between ${MIN_TITLE_LENGTH} and ${MAX_TITLE_LENGTH} characters`,
-          },
-          { status: 400 }
-        );
-      }
-      updates.title = trimmedTitle;
+    const validated = validateIssuePatchBody(body);
+    if (validated instanceof NextResponse) {
+      return validated;
     }
-
-    if (body.description !== undefined) {
-      let trimmedDescription: string | null = null;
-
-      if (typeof body.description === "string") {
-        trimmedDescription = body.description.trim() || null;
-
-        if (
-          trimmedDescription &&
-          trimmedDescription.length > MAX_DESCRIPTION_LENGTH
-        ) {
-          return NextResponse.json(
-            {
-              error: `Description must be less than ${MAX_DESCRIPTION_LENGTH} characters`,
-            },
-            { status: 400 }
-          );
-        }
-      }
-
-      updates.description = trimmedDescription;
-    }
-
-    if (body.status !== undefined) {
-      if (!VALID_STATUSES.includes(body.status)) {
-        return NextResponse.json(
-          {
-            error: `Invalid status. Must be one of: ${VALID_STATUSES.join(", ")}`,
-          },
-          { status: 400 }
-        );
-      }
-      updates.status = body.status;
-    }
+    const { updates } = validated;
 
     if (Object.keys(updates).length === 0) {
       return NextResponse.json(

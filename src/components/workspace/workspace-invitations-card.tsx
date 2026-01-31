@@ -40,18 +40,22 @@ export function WorkspaceInvitationsCard({
     useState<InvitationData | null>(null);
   const [isRevoking, setIsRevoking] = useState(false);
 
-  const handleCopyLink = useCallback(
+  const _handleCopyLink = useCallback(
     async (invitationId: string) => {
       const invitation = invitations.find((i) => i.id === invitationId);
-      if (!invitation) return;
+      if (!invitation) {
+        return;
+      }
 
       try {
         const response = await fetch(
           `/api/workspace/${encodeURIComponent(workspaceSlug)}/invitations`
         );
-        if (!response.ok) return;
+        if (!response.ok) {
+          return;
+        }
 
-        const origin = window.location.origin;
+        const _origin = window.location.origin;
         const data = await response.json();
         const inv = data.invitations?.find(
           (i: { id: string }) => i.id === invitationId
@@ -69,7 +73,7 @@ export function WorkspaceInvitationsCard({
     [invitations, workspaceSlug]
   );
 
-  const handleCopyInviteLink = useCallback(
+  const _handleCopyInviteLink = useCallback(
     async (email: string) => {
       try {
         const response = await fetch(
@@ -99,7 +103,9 @@ export function WorkspaceInvitationsCard({
   );
 
   const handleRevoke = useCallback(async () => {
-    if (!invitationToRevoke) return;
+    if (!invitationToRevoke) {
+      return;
+    }
 
     setIsRevoking(true);
 
@@ -131,8 +137,12 @@ export function WorkspaceInvitationsCard({
     const now = new Date();
     const diffMs = d.getTime() - now.getTime();
     const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-    if (diffDays <= 0) return "Expired";
-    if (diffDays === 1) return "Expires tomorrow";
+    if (diffDays <= 0) {
+      return "Expired";
+    }
+    if (diffDays === 1) {
+      return "Expires tomorrow";
+    }
     return `Expires in ${diffDays} days`;
   };
 

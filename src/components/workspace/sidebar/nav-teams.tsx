@@ -32,7 +32,7 @@ const CreateTeamDialog = dynamic(
 );
 
 const preloadCreateTeamDialog = () => {
-  void import("@/components/team/create-team-dialog");
+  import("@/components/team/create-team-dialog").catch(() => undefined);
 };
 
 interface NavTeamsProps {
@@ -117,9 +117,9 @@ export function NavTeams({ currentSlug, initialTeams }: NavTeamsProps) {
           <CollapsibleContent>
             <SidebarGroupContent>
               <SidebarMenu>
-                {isLoading ? (
-                  <>
-                    {[1, 2].map((i) => (
+                {(() => {
+                  if (isLoading) {
+                    return [1, 2].map((i) => (
                       <SidebarMenuItem key={i}>
                         <div className="flex h-8 items-center gap-2 px-2">
                           <Skeleton className="size-3.5 rounded" />
@@ -127,22 +127,24 @@ export function NavTeams({ currentSlug, initialTeams }: NavTeamsProps) {
                           <Skeleton className="h-4 w-24 rounded" />
                         </div>
                       </SidebarMenuItem>
-                    ))}
-                  </>
-                ) : teams.length === 0 ? (
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      className="text-muted-foreground"
-                      onClick={() => setCreateDialogOpen(true)}
-                      onFocus={preloadCreateTeamDialog}
-                      onMouseEnter={preloadCreateTeamDialog}
-                    >
-                      <IconPlus aria-hidden="true" className="size-4" />
-                      <span>Create a team</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ) : (
-                  teams.map((team) => {
+                    ));
+                  }
+                  if (teams.length === 0) {
+                    return (
+                      <SidebarMenuItem>
+                        <SidebarMenuButton
+                          className="text-muted-foreground"
+                          onClick={() => setCreateDialogOpen(true)}
+                          onFocus={preloadCreateTeamDialog}
+                          onMouseEnter={preloadCreateTeamDialog}
+                        >
+                          <IconPlus aria-hidden="true" className="size-4" />
+                          <span>Create a team</span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  }
+                  return teams.map((team) => {
                     const isExpanded = expandedTeams.has(team.identifier);
                     const isActive = isTeamPageActive(team.identifier);
                     return (
@@ -226,8 +228,8 @@ export function NavTeams({ currentSlug, initialTeams }: NavTeamsProps) {
                         </SidebarMenuItem>
                       </Collapsible>
                     );
-                  })
-                )}
+                  });
+                })()}
               </SidebarMenu>
             </SidebarGroupContent>
           </CollapsibleContent>

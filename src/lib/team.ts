@@ -155,7 +155,9 @@ export async function canManageTeam(
   userId: string
 ): Promise<boolean> {
   const teamRole = await getTeamMemberRole(teamId, userId);
-  if (teamRole === "lead") return true;
+  if (teamRole === "lead") {
+    return true;
+  }
 
   const teamWithWorkspace = await db
     .select({

@@ -17,7 +17,7 @@ const CreateProjectDialog = dynamic(
 );
 
 const preloadCreateProjectDialog = () => {
-  void import("@/components/project/create-project-dialog");
+  import("@/components/project/create-project-dialog").catch(() => undefined);
 };
 
 interface ProjectsClientProps {

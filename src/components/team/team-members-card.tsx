@@ -170,7 +170,9 @@ export function TeamMembersCard({
   ]);
 
   const handleRemoveMember = useCallback(async () => {
-    if (!memberToRemove) return;
+    if (!memberToRemove) {
+      return;
+    }
 
     setIsRemovingMember(true);
 
@@ -324,7 +326,9 @@ export function TeamMembersCard({
             </Select>
             <Select
               onValueChange={(val) => {
-                if (val) setSelectedRole(val as "lead" | "member");
+                if (val) {
+                  setSelectedRole(val as "lead" | "member");
+                }
               }}
               value={selectedRole}
             >

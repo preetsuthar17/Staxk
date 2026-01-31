@@ -76,7 +76,7 @@ export function SessionsCard() {
   }, []);
 
   useEffect(() => {
-    fetchSessions().catch(() => {});
+    fetchSessions().catch(() => undefined);
   }, [fetchSessions]);
 
   const formatLastActive = useCallback((dateString: string) => {

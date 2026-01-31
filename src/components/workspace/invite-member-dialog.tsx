@@ -120,7 +120,9 @@ export function InviteMemberDialog({ workspaceSlug }: InviteMemberDialogProps) {
   );
 
   const handleCopyLink = useCallback(async () => {
-    if (!inviteLink) return;
+    if (!inviteLink) {
+      return;
+    }
 
     try {
       await navigator.clipboard.writeText(inviteLink);
@@ -204,7 +206,9 @@ export function InviteMemberDialog({ workspaceSlug }: InviteMemberDialogProps) {
                   <FieldContent>
                     <Select
                       onValueChange={(val) => {
-                        if (val) setRole(val as "admin" | "member");
+                        if (val) {
+                          setRole(val as "admin" | "member");
+                        }
                       }}
                       value={role}
                     >

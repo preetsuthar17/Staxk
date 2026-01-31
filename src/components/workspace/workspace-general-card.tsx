@@ -32,8 +32,8 @@ import {
 const SLUG_REGEX = /^[a-zA-Z0-9_-]+$/;
 const MIN_SLUG_LENGTH = 3;
 const MAX_SLUG_LENGTH = 50;
-const MIN_NAME_LENGTH = 1;
-const MAX_NAME_LENGTH = 100;
+const _MIN_NAME_LENGTH = 1;
+const _MAX_NAME_LENGTH = 100;
 const MAX_DESCRIPTION_LENGTH = 500;
 const NAME_DEBOUNCE_MS = 500;
 const DESCRIPTION_DEBOUNCE_MS = 500;
