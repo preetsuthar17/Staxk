@@ -20,8 +20,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Textarea } from "@/components/ui/textarea";
 import { Spinner } from "@/components/ui/spinner";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Tooltip,
   TooltipContent,
@@ -65,10 +65,7 @@ function validateSlug(slug: string): string | null {
   if (!SLUG_REGEX.test(trimmed)) {
     return "Slug can only contain letters, numbers, hyphens, and underscores";
   }
-  if (
-    trimmed.length < MIN_SLUG_LENGTH ||
-    trimmed.length > MAX_SLUG_LENGTH
-  ) {
+  if (trimmed.length < MIN_SLUG_LENGTH || trimmed.length > MAX_SLUG_LENGTH) {
     return `Slug must be between ${MIN_SLUG_LENGTH} and ${MAX_SLUG_LENGTH} characters`;
   }
   return null;
@@ -346,7 +343,10 @@ function useWorkspaceSlugEditing(
 
     slugDebounceRef.current = setTimeout(async () => {
       try {
-        const url = new URL("/api/workspace/slug/check", window.location.origin);
+        const url = new URL(
+          "/api/workspace/slug/check",
+          window.location.origin
+        );
         url.searchParams.set("slug", trimmedSlug);
         if (workspaceId) {
           url.searchParams.set("excludeWorkspaceId", workspaceId);
@@ -451,8 +451,7 @@ function useWorkspaceSlugEditing(
       setIsEditingSlug(false);
       setSlugAvailability(null);
       toast.success("Slug updated successfully");
-      
-      // Reload page to update URL
+
       window.location.href = `/${trimmedSlug}/settings`;
     } catch (error) {
       toast.error(getErrorMessage(error, "Failed to update slug"));
@@ -548,7 +547,6 @@ function useWorkspaceLogoUpload(
         await uploadLogoFile(file);
         setLogoPreview(null);
         toast.success("Logo updated successfully");
-        // Reload to get updated logo
         window.location.reload();
       } catch (error) {
         toast.error(getErrorMessage(error, "Failed to upload logo"));
@@ -606,9 +604,7 @@ function LogoUploadSection({
           {displayLogo ? (
             <AvatarImage alt="Workspace" src={displayLogo} />
           ) : (
-            <AvatarFallback className="text-lg">
-              {logoFallback}
-            </AvatarFallback>
+            <AvatarFallback className="text-lg">{logoFallback}</AvatarFallback>
           )}
         </Avatar>
         {isUploadingLogo && (
@@ -714,9 +710,7 @@ function SlugInputSection({
         >
           <div
             className={`flex flex-col items-start justify-start ${
-              isCheckingSlug || slugAvailability !== null
-                ? "gap-1.5"
-                : "gap-0"
+              isCheckingSlug || slugAvailability !== null ? "gap-1.5" : "gap-0"
             }`}
           >
             Slug
@@ -841,7 +835,7 @@ function DescriptionInputSection({
         ) : (
           <div className="relative w-full sm:max-w-xs">
             <Textarea
-              className="w-full pr-8 min-h-24 resize-y"
+              className="min-h-24 w-full resize-y pr-8"
               id="description"
               maxLength={MAX_DESCRIPTION_LENGTH}
               onChange={(e) => setDescription(e.target.value)}
@@ -978,12 +972,12 @@ export function WorkspaceGeneralCard({
       <CardContent>
         <div className="flex flex-col gap-6">
           <LogoUploadSection
+            displayLogo={displayLogo}
             fileInputRef={fileInputRef}
             handleLogoChange={handleLogoChange}
             handleLogoClick={handleLogoClick}
             isUploadingLogo={isUploadingLogo}
             logoFallback={logoFallback}
-            displayLogo={displayLogo}
           />
           <NameInputSection
             isPending={isPending}
@@ -1017,4 +1011,3 @@ export function WorkspaceGeneralCard({
     </Card>
   );
 }
-

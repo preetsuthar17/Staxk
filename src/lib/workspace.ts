@@ -11,11 +11,6 @@ export interface WorkspaceData {
   role: "owner" | "admin" | "member";
 }
 
-/**
- * Get all workspaces for a user.
- * Uses indexed userId query with join to workspace table.
- * Only selects required fields for optimal performance.
- */
 export async function getUserWorkspaces(
   userId: string
 ): Promise<WorkspaceData[]> {
@@ -36,11 +31,6 @@ export async function getUserWorkspaces(
   return results;
 }
 
-/**
- * Get workspace by slug with membership verification.
- * Uses indexed slug and userId for optimal performance.
- * Returns null if workspace doesn't exist or user isn't a member.
- */
 export async function getWorkspaceBySlug(
   slug: string,
   userId: string
@@ -62,11 +52,6 @@ export async function getWorkspaceBySlug(
   return results[0] || null;
 }
 
-/**
- * Get user's default (first) workspace.
- * Returns the earliest created workspace for the user.
- * Uses indexed userId query with limit 1 for optimal performance.
- */
 export async function getUserDefaultWorkspace(
   userId: string
 ): Promise<WorkspaceData | null> {

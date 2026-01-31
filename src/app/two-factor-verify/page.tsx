@@ -20,9 +20,8 @@ export default function TwoFactorVerifyPage() {
         const response = await fetch("/api/auth/session");
         const data = await response.json();
         setUser(data.user);
-        // If user is authenticated and doesn't have 2FA enabled, redirect to home
         if (data.user && !data.user.twoFactorEnabled) {
-          router.replace("/home");
+          router.replace("/");
         }
       } catch (error) {
         console.error("Failed to check session:", error);
@@ -43,7 +42,6 @@ export default function TwoFactorVerifyPage() {
     );
   }
 
-  // If user is already authenticated without 2FA, don't render (will redirect)
   if (user && !user.twoFactorEnabled) {
     return null;
   }

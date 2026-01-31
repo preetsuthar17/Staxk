@@ -107,7 +107,6 @@ export function LoginWithPasskey({
         return;
       }
 
-      // Check if 2FA verification is required
       if (
         result.data &&
         "twoFactorRedirect" in result.data &&
@@ -118,7 +117,7 @@ export function LoginWithPasskey({
       }
 
       toast.success("Signed in successfully");
-      router.push("/home");
+      router.push("/");
       router.refresh();
     } catch (error) {
       setIsLoading(false);

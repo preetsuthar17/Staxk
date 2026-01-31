@@ -3,6 +3,7 @@
 import { IconBuilding, IconChevronsDown, IconPlus } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,7 +20,6 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CreateWorkspaceDialog } from "./create-workspace-dialog";
 
@@ -28,7 +28,7 @@ interface Workspace {
   name: string;
   slug: string;
   description: string | null;
-   logo: string | null;
+  logo: string | null;
   role: "owner" | "admin" | "member";
 }
 
@@ -145,13 +145,8 @@ export function WorkspaceSwitcher({
                     />
                   ) : (
                     <AvatarFallback>
-                      <IconBuilding
-                        aria-hidden="true"
-                        className="size-4"
-                      />
-                      <span className="sr-only">
-                        {activeWorkspace.name}
-                      </span>
+                      <IconBuilding aria-hidden="true" className="size-4" />
+                      <span className="sr-only">{activeWorkspace.name}</span>
                     </AvatarFallback>
                   )}
                 </Avatar>

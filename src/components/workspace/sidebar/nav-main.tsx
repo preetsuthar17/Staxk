@@ -45,7 +45,10 @@ export function NavMain({ currentSlug }: NavMainProps) {
   ];
 
   const isActive = (url: string) => {
-    return pathname === url;
+    if (url === `/${currentSlug}`) {
+      return pathname === url;
+    }
+    return pathname === url || pathname.startsWith(`${url}/`);
   };
 
   return (
@@ -63,6 +66,7 @@ export function NavMain({ currentSlug }: NavMainProps) {
                   tooltip={item.title}
                 >
                   <IconComponent
+                    aria-hidden="true"
                     className={
                       active
                         ? "fill-current text-muted-foreground contrast-200"

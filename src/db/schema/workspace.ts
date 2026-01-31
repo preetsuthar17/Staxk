@@ -55,12 +55,43 @@ export const workspaceMember = pgTable(
   })
 );
 
+export const workspaceInvitation = pgTable(
+  "workspace_invitation",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    email: text("email").notNull(),
+    role: text("role").notNull().$type<"admin" | "member">(),
+    token: text("token").notNull().unique(),
+    invitedById: text("invited_by_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    status: text("status")
+      .notNull()
+      .$type<"pending" | "accepted" | "declined" | "expired">(),
+    expiresAt: timestamp("expires_at").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    workspaceIdEmailIdx: uniqueIndex("idx_invitation_workspaceId_email").on(
+      table.workspaceId,
+      table.email
+    ),
+    tokenIdx: uniqueIndex("idx_invitation_token").on(table.token),
+    workspaceIdIdx: index("idx_invitation_workspaceId").on(table.workspaceId),
+    statusIdx: index("idx_invitation_status").on(table.status),
+  })
+);
+
 export const workspaceRelations = relations(workspace, ({ one, many }) => ({
   owner: one(user, {
     fields: [workspace.ownerId],
     references: [user.id],
   }),
   members: many(workspaceMember),
+  invitations: many(workspaceInvitation),
 }));
 
 export const workspaceMemberRelations = relations(
@@ -72,6 +103,20 @@ export const workspaceMemberRelations = relations(
     }),
     user: one(user, {
       fields: [workspaceMember.userId],
+      references: [user.id],
+    }),
+  })
+);
+
+export const workspaceInvitationRelations = relations(
+  workspaceInvitation,
+  ({ one }) => ({
+    workspace: one(workspace, {
+      fields: [workspaceInvitation.workspaceId],
+      references: [workspace.id],
+    }),
+    invitedBy: one(user, {
+      fields: [workspaceInvitation.invitedById],
       references: [user.id],
     }),
   })

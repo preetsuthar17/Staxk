@@ -109,7 +109,6 @@ export function CreateWorkspaceDialog({
   const slug = form.watch("slug");
   const name = form.watch("name");
 
-  // Reset form when dialog closes
   useEffect(() => {
     if (!open && resetRef.current) {
       resetRef.current();
@@ -125,7 +124,6 @@ export function CreateWorkspaceDialog({
     }
   }, [open]);
 
-  // Auto-generate slug from name
   useEffect(() => {
     if (!slugManuallyEditedRef.current && name && setValueRef.current) {
       const autoSlug = generateSlugFromName(name);
@@ -138,7 +136,6 @@ export function CreateWorkspaceDialog({
     }
   }, [name]);
 
-  // Debounced slug availability check
   useEffect(() => {
     if (!slug || slug.length < MIN_SLUG_LENGTH) {
       setSlugAvailable(null);
@@ -152,12 +149,10 @@ export function CreateWorkspaceDialog({
       return;
     }
 
-    // Cancel previous request
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
 
-    // Clear previous debounce
     if (slugDebounceRef.current) {
       clearTimeout(slugDebounceRef.current);
     }
@@ -165,7 +160,6 @@ export function CreateWorkspaceDialog({
     setCheckingSlug(true);
     setSlugAvailable(null);
 
-    // Create new AbortController
     abortControllerRef.current = new AbortController();
 
     slugDebounceRef.current = setTimeout(async () => {

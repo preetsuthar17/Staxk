@@ -76,9 +76,7 @@ export function SessionsCard() {
   }, []);
 
   useEffect(() => {
-    fetchSessions().catch(() => {
-      // Error handling is done in fetchSessions
-    });
+    fetchSessions().catch(() => {});
   }, [fetchSessions]);
 
   const formatLastActive = useCallback((dateString: string) => {

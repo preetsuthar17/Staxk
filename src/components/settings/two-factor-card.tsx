@@ -319,16 +319,13 @@ export function TwoFactorCard() {
         setTwoFactorEnabled(false);
       }
     } catch (_error) {
-      // Error handling
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    checkTwoFactorStatus().catch(() => {
-      // Error handling
-    });
+    checkTwoFactorStatus().catch(() => {});
   }, [checkTwoFactorStatus]);
 
   const handleEnableClick = useCallback(() => {
@@ -407,7 +404,6 @@ export function TwoFactorCard() {
       setShowSecret(false);
       setShowVerificationStep(false);
       await checkTwoFactorStatus();
-      // Show backup codes if available
       if (backupCodes.length > 0) {
         setShowBackupCodesDialog(true);
       }

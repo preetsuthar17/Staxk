@@ -92,9 +92,7 @@ export function PasskeyCard() {
   }, []);
 
   useEffect(() => {
-    fetchPasskeys().catch(() => {
-      // Error handling is done in fetchPasskeys
-    });
+    fetchPasskeys().catch(() => {});
   }, [fetchPasskeys]);
 
   const handleAddPasskey = useCallback(() => {
@@ -126,7 +124,7 @@ export function PasskeyCard() {
       try {
         const result = await authClient.passkey.addPasskey({
           name: trimmedName,
-          authenticatorAttachment: undefined, // Allow both platform and cross-platform
+          authenticatorAttachment: undefined,
         });
 
         if (result.error) {

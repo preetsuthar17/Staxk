@@ -1,6 +1,5 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
 import {
   Sidebar,
   SidebarContent,
@@ -8,53 +7,38 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { useWorkspaces } from "@/hooks/use-workspaces";
+import type { TeamData } from "@/lib/team";
+import type { WorkspaceData } from "@/lib/workspace";
 import { NavFooter } from "./sidebar/nav-footer";
 import { NavMain } from "./sidebar/nav-main";
+import { NavTeams } from "./sidebar/nav-teams";
 import { NavUser } from "./sidebar/nav-user";
+import { NavWorkspace } from "./sidebar/nav-workspace";
 import { WorkspaceSwitcher } from "./sidebar/workspace-switcher";
-
-interface Workspace {
-  id: string;
-  name: string;
-  slug: string;
-  description: string | null;
-  logo: string | null;
-  role: "owner" | "admin" | "member";
-}
 
 interface WorkspaceSidebarProps {
   currentSlug: string;
+  initialWorkspaces?: WorkspaceData[];
+  initialTeams?: TeamData[];
 }
 
-export function WorkspaceSidebar({ currentSlug }: WorkspaceSidebarProps) {
-  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+export function WorkspaceSidebar({
+  currentSlug,
+  initialWorkspaces,
+  initialTeams,
+}: WorkspaceSidebarProps) {
+  const { workspaces, isLoading, mutate } = useWorkspaces({
+    initialData: initialWorkspaces,
+  });
 
-  const fetchWorkspaces = useCallback(async () => {
-    try {
-      const response = await fetch("/api/workspace/list");
-      if (response.ok) {
-        const data = await response.json();
-        setWorkspaces(data.workspaces || []);
-      }
-    } catch (error) {
-      console.error("Failed to fetch workspaces:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchWorkspaces();
-  }, [fetchWorkspaces]);
-
-  const handleWorkspaceCreated = useCallback(
-    (_workspace: { id: string; name: string; slug: string }) => {
-      // Refresh workspace list
-      fetchWorkspaces();
-    },
-    [fetchWorkspaces]
-  );
+  const handleWorkspaceCreated = (_workspace: {
+    id: string;
+    name: string;
+    slug: string;
+  }) => {
+    mutate();
+  };
 
   return (
     <Sidebar collapsible="icon" variant="sidebar">
@@ -68,6 +52,8 @@ export function WorkspaceSidebar({ currentSlug }: WorkspaceSidebarProps) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain currentSlug={currentSlug} />
+        <NavWorkspace currentSlug={currentSlug} />
+        <NavTeams currentSlug={currentSlug} initialTeams={initialTeams} />
       </SidebarContent>
       <SidebarFooter>
         <NavFooter currentSlug={currentSlug} />

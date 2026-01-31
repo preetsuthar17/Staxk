@@ -26,7 +26,7 @@ function NavigationMenu({
 function NavigationMenuList({
   className,
   ...props
-}: NavigationMenuPrimitive.List.Props) {
+}: Omit<NavigationMenuPrimitive.List.Props, "ref">) {
   return (
     <NavigationMenuPrimitive.List
       className={cn(
@@ -42,7 +42,7 @@ function NavigationMenuList({
 function NavigationMenuItem({
   className,
   ...props
-}: NavigationMenuPrimitive.Item.Props) {
+}: Omit<NavigationMenuPrimitive.Item.Props, "ref">) {
   return (
     <NavigationMenuPrimitive.Item
       className={cn("relative", className)}
@@ -140,7 +140,7 @@ function NavigationMenuLink({
 function NavigationMenuIndicator({
   className,
   ...props
-}: NavigationMenuPrimitive.Icon.Props) {
+}: Omit<NavigationMenuPrimitive.Icon.Props, "ref">) {
   return (
     <NavigationMenuPrimitive.Icon
       className={cn(

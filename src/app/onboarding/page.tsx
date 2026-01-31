@@ -26,7 +26,7 @@ export default function OnboardingPage() {
         }
 
         if (data.user.isOnboarded) {
-          router.replace("/home");
+          router.replace("/");
           return;
         }
       } catch (error) {
@@ -49,7 +49,6 @@ export default function OnboardingPage() {
     );
   }
 
-  // If user is not authenticated or already onboarded, don't render (will redirect)
   if (!user || user.isOnboarded) {
     return null;
   }

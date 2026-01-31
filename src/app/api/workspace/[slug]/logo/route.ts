@@ -79,33 +79,21 @@ export async function POST(
       return ERRORS.INVALID_TYPE;
     }
 
-    // Check workspace exists and user has permission (owner or admin)
     const [workspaceData] = await db
       .select({
         id: workspace.id,
         role: workspaceMember.role,
       })
       .from(workspace)
-      .innerJoin(
-        workspaceMember,
-        eq(workspace.id, workspaceMember.workspaceId)
-      )
-      .where(
-        and(
-          eq(workspace.slug, slug),
-          eq(workspaceMember.userId, userId)
-        )
-      )
+      .innerJoin(workspaceMember, eq(workspace.id, workspaceMember.workspaceId))
+      .where(and(eq(workspace.slug, slug), eq(workspaceMember.userId, userId)))
       .limit(1);
 
     if (!workspaceData) {
       return ERRORS.NOT_FOUND;
     }
 
-    if (
-      workspaceData.role !== "owner" &&
-      workspaceData.role !== "admin"
-    ) {
+    if (workspaceData.role !== "owner" && workspaceData.role !== "admin") {
       return ERRORS.FORBIDDEN;
     }
 
@@ -143,4 +131,3 @@ export async function POST(
     return ERRORS.SERVER_ERROR;
   }
 }
-

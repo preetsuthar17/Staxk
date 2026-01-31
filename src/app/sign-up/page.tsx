@@ -19,7 +19,7 @@ export default function SignUpPage() {
         const data = await response.json();
         setUser(data.user);
         if (data.user) {
-          router.replace("/home");
+          router.replace("/");
         }
       } catch (error) {
         console.error("Failed to check session:", error);

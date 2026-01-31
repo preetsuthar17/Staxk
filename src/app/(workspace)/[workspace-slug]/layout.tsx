@@ -1,4 +1,3 @@
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import {
@@ -9,8 +8,12 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { WorkspaceSidebar } from "@/components/workspace/workspace-sidebar";
 import { WorkspaceTracker } from "@/components/workspace/workspace-tracker";
-import { auth } from "@/lib/auth";
-import { getWorkspaceBySlug } from "@/lib/workspace";
+import {
+  getCachedUserWorkspaces,
+  getCachedWorkspaceBySlug,
+  getCachedWorkspaceTeams,
+  getSession,
+} from "@/lib/cached-queries";
 
 interface WorkspaceLayoutProps {
   children: React.ReactNode;
@@ -24,26 +27,33 @@ async function WorkspaceLayoutContent({
   children: React.ReactNode;
   slug: string;
 }) {
-  const headersList = await headers();
-  const sessionData = await auth.api.getSession({
-    headers: headersList,
-  });
+  const sessionData = await getSession();
 
   if (!sessionData?.user) {
     redirect("/login");
   }
 
   const userId = sessionData.user.id;
-  const workspace = await getWorkspaceBySlug(slug, userId);
+
+  const [workspace, workspaces] = await Promise.all([
+    getCachedWorkspaceBySlug(slug, userId),
+    getCachedUserWorkspaces(userId),
+  ]);
 
   if (!workspace) {
     redirect("/");
   }
 
+  const teams = await getCachedWorkspaceTeams(workspace.id, userId);
+
   return (
     <SidebarProvider>
       <WorkspaceTracker slug={slug} />
-      <WorkspaceSidebar currentSlug={slug} />
+      <WorkspaceSidebar
+        currentSlug={slug}
+        initialTeams={teams}
+        initialWorkspaces={workspaces}
+      />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
           <SidebarTrigger />

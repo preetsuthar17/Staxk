@@ -46,7 +46,7 @@ export function TwoFactorVerify() {
       }
 
       toast.success("Verification successful");
-      router.push("/home");
+      router.push("/");
       router.refresh();
     } catch (_error) {
       setError("An error occurred while verifying code");
@@ -77,7 +77,7 @@ export function TwoFactorVerify() {
       }
 
       toast.success("Verification successful");
-      router.push("/home");
+      router.push("/");
       router.refresh();
     } catch (_error) {
       setError("An error occurred while verifying backup code");

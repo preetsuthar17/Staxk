@@ -267,7 +267,7 @@ export function OnboardingForm() {
   useEffect(() => {
     if (currentStep === 5) {
       const timer = setTimeout(() => {
-        router.push("/home");
+        router.push("/");
         router.refresh();
       }, 5000);
       return () => clearTimeout(timer);
@@ -369,13 +369,10 @@ export function OnboardingForm() {
 
   return (
     <div className="flex w-full max-w-sm flex-col gap-6">
-      {/* Header */}
       <div className="flex flex-col items-center justify-center gap-6 text-center">
         <Image alt="Staxk" height={42} src="/logo.svg" width={42} />
 
-        {/* Content */}
         <div className="relative flex min-h-[200px] w-full flex-col gap-6">
-          {/* Step 1: Welcome */}
           <div
             className={`absolute inset-0 flex flex-col gap-2 transition-opacity duration-300 ${
               currentStep === 1
@@ -392,7 +389,6 @@ export function OnboardingForm() {
             </p>
           </div>
 
-          {/* Step 2: Workspace Name */}
           <div
             className={`absolute inset-0 flex flex-col gap-6 transition-opacity duration-300 ${
               currentStep === 2
@@ -428,7 +424,6 @@ export function OnboardingForm() {
             </div>
           </div>
 
-          {/* Step 3: Workspace Slug */}
           <div
             className={`absolute inset-0 flex flex-col gap-6 transition-opacity duration-300 ${
               currentStep === 3
@@ -491,7 +486,6 @@ export function OnboardingForm() {
             </div>
           </div>
 
-          {/* Step 4: Workspace Description */}
           <div
             className={`absolute inset-0 flex flex-col gap-6 transition-opacity duration-300 ${
               currentStep === 4
@@ -540,7 +534,6 @@ export function OnboardingForm() {
             </div>
           </div>
 
-          {/* Step 5: Success */}
           <div
             className={`absolute inset-0 flex flex-col gap-2 transition-opacity duration-300 ${
               currentStep === 5

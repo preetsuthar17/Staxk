@@ -107,7 +107,6 @@ export async function PATCH(
     const { slug } = await params;
     const userId = session.user.id;
 
-    // Check workspace exists and user has permission (owner or admin)
     const [workspaceData] = await db
       .select({
         id: workspace.id,
@@ -117,26 +116,15 @@ export async function PATCH(
         role: workspaceMember.role,
       })
       .from(workspace)
-      .innerJoin(
-        workspaceMember,
-        eq(workspace.id, workspaceMember.workspaceId)
-      )
-      .where(
-        and(
-          eq(workspace.slug, slug),
-          eq(workspaceMember.userId, userId)
-        )
-      )
+      .innerJoin(workspaceMember, eq(workspace.id, workspaceMember.workspaceId))
+      .where(and(eq(workspace.slug, slug), eq(workspaceMember.userId, userId)))
       .limit(1);
 
     if (!workspaceData) {
       return ERRORS.NOT_FOUND;
     }
 
-    if (
-      workspaceData.role !== "owner" &&
-      workspaceData.role !== "admin"
-    ) {
+    if (workspaceData.role !== "owner" && workspaceData.role !== "admin") {
       return ERRORS.FORBIDDEN;
     }
 
@@ -146,7 +134,6 @@ export async function PATCH(
       description?: string | null;
     } = {};
 
-    // Validate and update name if provided
     if (body.name !== undefined) {
       const trimmedName = body.name.trim();
       if (
@@ -160,7 +147,6 @@ export async function PATCH(
       }
     }
 
-    // Validate and update slug if provided
     if (body.slug !== undefined) {
       const normalizedSlug = body.slug.trim().toLowerCase();
       if (
@@ -172,7 +158,6 @@ export async function PATCH(
       }
 
       if (normalizedSlug !== workspaceData.slug) {
-        // Check if slug is available (excluding current workspace)
         const existingWorkspace = await db
           .select({ slug: workspace.slug })
           .from(workspace)
@@ -192,7 +177,6 @@ export async function PATCH(
       }
     }
 
-    // Validate and update description if provided
     if (body.description !== undefined) {
       const trimmedDescription = body.description.trim() || null;
       if (
@@ -206,13 +190,14 @@ export async function PATCH(
       }
     }
 
-    // If no changes, return current workspace
     if (Object.keys(updateData).length === 0) {
       const currentWorkspace = await getWorkspaceBySlug(slug, userId);
-      return NextResponse.json({ workspace: currentWorkspace }, { status: 200 });
+      return NextResponse.json(
+        { workspace: currentWorkspace },
+        { status: 200 }
+      );
     }
 
-    // Update workspace
     const [updatedWorkspace] = await db
       .update(workspace)
       .set(updateData)

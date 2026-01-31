@@ -15,7 +15,6 @@ export async function GET(request: Request) {
       return NextResponse.json({ user: null }, { status: 200 });
     }
 
-    // Fetch isOnboarded status from database
     const [userData] = await db
       .select({ isOnboarded: user.isOnboarded })
       .from(user)

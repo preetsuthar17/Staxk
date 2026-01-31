@@ -9,9 +9,11 @@ import {
   IconSettings,
   IconSettingsFilled,
   IconUsers,
+  IconUsersGroup,
 } from "@tabler/icons-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { TeamAvatar } from "@/components/team/team-avatar";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -19,6 +21,7 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -37,7 +40,6 @@ const MAC_PLATFORM_REGEX = /Mac|iPhone|iPad|iPod/;
 
 function decodeHtmlEntities(text: string): string {
   if (typeof document === "undefined") {
-    // SSR fallback - simple decode
     return text
       .replace(/&amp;/g, "&")
       .replace(/&lt;/g, "<")
@@ -69,6 +71,13 @@ function highlightText(text: string, query: string): React.ReactNode {
   });
 }
 
+interface Team {
+  id: string;
+  name: string;
+  identifier: string;
+  icon: string | null;
+}
+
 interface WorkspaceSettingsSidebarProps {
   workspaceSlug: string;
 }
@@ -83,6 +92,7 @@ export function WorkspaceSettingsSidebar({
   const [shouldRenderResults, setShouldRenderResults] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [isMac, setIsMac] = useState(false);
+  const [teams, setTeams] = useState<Team[]>([]);
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -93,6 +103,30 @@ export function WorkspaceSettingsSidebar({
           ?.platform === "macOS"
     );
   }, []);
+
+  const fetchTeams = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/team/list?workspaceSlug=${workspaceSlug}`, {
+        cache: "no-store",
+      });
+      const data = await res.json();
+      setTeams(data.teams || []);
+    } catch {
+      setTeams([]);
+    }
+  }, [workspaceSlug]);
+
+  useEffect(() => {
+    fetchTeams();
+  }, [fetchTeams, pathname]);
+
+  useEffect(() => {
+    const handleFocus = () => {
+      fetchTeams();
+    };
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
+  }, [fetchTeams]);
 
   const baseUrl = useMemo(() => `/${workspaceSlug}/settings`, [workspaceSlug]);
 
@@ -143,8 +177,15 @@ export function WorkspaceSettingsSidebar({
         category: "Danger Zone",
         type: "card",
       },
+      ...teams.map((team) => ({
+        title: team.name,
+        description: `Team settings for ${team.name} (${team.identifier})`,
+        url: `/${workspaceSlug}/settings/team/${team.identifier}`,
+        category: "Teams",
+        type: "card" as const,
+      })),
     ],
-    [baseUrl]
+    [baseUrl, teams, workspaceSlug]
   );
 
   const menuItems = useMemo(
@@ -376,6 +417,42 @@ export function WorkspaceSettingsSidebar({
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {teams.length > 0 && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="flex items-center gap-2">
+              <IconUsersGroup className="size-4" />
+              <span>Your Teams</span>
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {teams.map((team) => {
+                  const teamSettingsUrl = `/${workspaceSlug}/settings/team/${team.identifier}`;
+                  const isActive = pathname === teamSettingsUrl;
+                  return (
+                    <SidebarMenuItem key={team.id}>
+                      <SidebarMenuButton
+                        isActive={isActive}
+                        onClick={() => router.push(teamSettingsUrl)}
+                        tooltip={team.name}
+                      >
+                        <TeamAvatar
+                          icon={team.icon}
+                          identifier={team.identifier}
+                          name={team.name}
+                          size="xs"
+                        />
+                        <span className="truncate font-[490] text-[13px]">
+                          {team.name}
+                        </span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
     </Sidebar>
   );

@@ -1,17 +1,96 @@
 "use client";
 
 import { AlertDialog as AlertDialogPrimitive } from "@base-ui/react/alert-dialog";
+import { mergeProps } from "@base-ui/react/merge-props";
+import type { VariantProps } from "class-variance-authority";
 import type * as React from "react";
-import { Button } from "@/components/ui/button";
+import { isValidElement, type ReactNode } from "react";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 
 function AlertDialog({ ...props }: AlertDialogPrimitive.Root.Props) {
   return <AlertDialogPrimitive.Root data-slot="alert-dialog" {...props} />;
 }
 
-function AlertDialogTrigger({ ...props }: AlertDialogPrimitive.Trigger.Props) {
+function AlertDialogTrigger({
+  children,
+  render,
+  ...props
+}: AlertDialogPrimitive.Trigger.Props) {
+  if (render !== undefined) {
+    return (
+      <AlertDialogPrimitive.Trigger
+        data-slot="alert-dialog-trigger"
+        render={render}
+        {...props}
+      />
+    );
+  }
+
+  if (
+    isValidElement(children) &&
+    children.type &&
+    typeof children.type === "function" &&
+    (children.type.name === "Button" ||
+      (children.props as { variant?: unknown; size?: unknown })?.variant !==
+        undefined ||
+      (children.props as { variant?: unknown; size?: unknown })?.size !==
+        undefined)
+  ) {
+    const buttonProps = children.props as {
+      variant?: VariantProps<typeof buttonVariants>["variant"];
+      size?: VariantProps<typeof buttonVariants>["size"];
+      className?: string;
+      disabled?: boolean;
+      loading?: boolean;
+      children?: ReactNode;
+      [key: string]: unknown;
+    };
+    const {
+      variant = "default",
+      size = "default",
+      className,
+      ...restProps
+    } = buttonProps;
+
+    return (
+      <AlertDialogPrimitive.Trigger
+        data-slot="alert-dialog-trigger"
+        render={(triggerProps) => (
+          <button
+            {...mergeProps<"button">(triggerProps, restProps, {
+              className: cn(
+                "relative",
+                buttonVariants({ variant, size, className })
+              ),
+              disabled: buttonProps.disabled || buttonProps.loading,
+            })}
+          >
+            <span
+              className={cn(
+                "inline-flex items-center gap-1.5",
+                buttonProps.loading && "opacity-0"
+              )}
+            >
+              {buttonProps.children}
+            </span>
+            {buttonProps.loading && (
+              <span className="absolute inset-0 flex items-center justify-center">
+                <Spinner />
+              </span>
+            )}
+          </button>
+        )}
+        {...props}
+      />
+    );
+  }
+
   return (
-    <AlertDialogPrimitive.Trigger data-slot="alert-dialog-trigger" {...props} />
+    <AlertDialogPrimitive.Trigger data-slot="alert-dialog-trigger" {...props}>
+      {children}
+    </AlertDialogPrimitive.Trigger>
   );
 }
 
@@ -40,6 +119,7 @@ function AlertDialogOverlay({
 function AlertDialogContent({
   className,
   size = "default",
+  children,
   ...props
 }: AlertDialogPrimitive.Popup.Props & {
   size?: "default" | "sm";
@@ -48,14 +128,20 @@ function AlertDialogContent({
     <AlertDialogPortal>
       <AlertDialogOverlay />
       <AlertDialogPrimitive.Popup
+        aria-modal="true"
         className={cn(
-          "data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 group/alert-dialog-content fixed top-1/2 left-1/2 z-50 grid w-full -translate-x-1/2 -translate-y-1/2 gap-6 rounded-xl bg-background p-6 outline-none ring-1 ring-foreground/10 duration-100 data-[size=default]:max-w-xs data-[size=sm]:max-w-xs data-closed:animate-out data-open:animate-in data-[size=default]:sm:max-w-lg",
+          "data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 group/alert-dialog-content fixed top-1/2 left-1/2 z-50 grid w-full -translate-x-1/2 -translate-y-1/2 gap-6 rounded-xl bg-background p-6 outline-none ring-1 ring-foreground/10 duration-100 data-[size=default]:max-w-xs data-[size=sm]:max-w-xs data-closed:animate-out data-open:animate-in motion-reduce:duration-0 data-[size=default]:sm:max-w-lg",
           className
         )}
         data-size={size}
         data-slot="alert-dialog-content"
         {...props}
-      />
+      >
+        <span aria-live="assertive" className="sr-only">
+          Alert dialog opened. Press Escape to close.
+        </span>
+        {children}
+      </AlertDialogPrimitive.Popup>
     </AlertDialogPortal>
   );
 }
@@ -142,12 +228,14 @@ function AlertDialogDescription({
 
 function AlertDialogAction({
   className,
+  loading = false,
   ...props
 }: React.ComponentProps<typeof Button>) {
   return (
     <Button
       className={cn(className)}
       data-slot="alert-dialog-action"
+      loading={loading}
       {...props}
     />
   );

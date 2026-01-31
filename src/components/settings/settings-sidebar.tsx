@@ -102,7 +102,6 @@ const MAC_PLATFORM_REGEX = /Mac|iPhone|iPad|iPod/;
 
 function decodeHtmlEntities(text: string): string {
   if (typeof document === "undefined") {
-    // SSR fallback - simple decode
     return text
       .replace(/&amp;/g, "&")
       .replace(/&lt;/g, "<")

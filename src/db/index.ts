@@ -14,8 +14,23 @@ import {
   userRelations,
   verification,
 } from "./schema/auth";
+import { issue, issueRelations } from "./schema/issue";
+import {
+  project,
+  projectRelations,
+  projectTeam,
+  projectTeamRelations,
+} from "./schema/project";
+import {
+  team,
+  teamMember,
+  teamMemberRelations,
+  teamRelations,
+} from "./schema/team";
 import {
   workspace,
+  workspaceInvitation,
+  workspaceInvitationRelations,
   workspaceMember,
   workspaceMemberRelations,
   workspaceRelations,
@@ -48,8 +63,20 @@ export const db = drizzle({
     userRelations,
     verification,
     workspace,
+    workspaceInvitation,
+    workspaceInvitationRelations,
     workspaceMember,
     workspaceRelations,
     workspaceMemberRelations,
+    team,
+    teamMember,
+    teamRelations,
+    teamMemberRelations,
+    project,
+    projectTeam,
+    projectRelations,
+    projectTeamRelations,
+    issue,
+    issueRelations,
   },
 });

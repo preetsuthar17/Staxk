@@ -64,7 +64,6 @@ export async function POST(request: Request) {
     const normalizedSlug = slug.trim().toLowerCase();
     const trimmedDescription = description?.trim() || null;
 
-    // Validate name
     if (
       trimmedName.length < MIN_NAME_LENGTH ||
       trimmedName.length > MAX_NAME_LENGTH
@@ -77,7 +76,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validate slug
     if (
       !SLUG_REGEX.test(normalizedSlug) ||
       normalizedSlug.length < MIN_SLUG_LENGTH ||
@@ -91,7 +89,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validate description
     if (
       trimmedDescription &&
       trimmedDescription.length > MAX_DESCRIPTION_LENGTH
@@ -104,7 +101,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check if slug is available
     const existingWorkspace = await db
       .select({ slug: workspace.slug })
       .from(workspace)
@@ -118,12 +114,10 @@ export async function POST(request: Request) {
       );
     }
 
-    // Create workspace, member, and update user in a transaction
     const workspaceId = crypto.randomUUID();
     const memberId = crypto.randomUUID();
 
     await db.transaction(async (tx) => {
-      // Create workspace
       await tx.insert(workspace).values({
         id: workspaceId,
         name: trimmedName,
@@ -132,7 +126,6 @@ export async function POST(request: Request) {
         ownerId: userId,
       });
 
-      // Create workspace member (owner)
       await tx.insert(workspaceMember).values({
         id: memberId,
         workspaceId,
@@ -140,7 +133,6 @@ export async function POST(request: Request) {
         role: "owner",
       });
 
-      // Update user isOnboarded status
       await tx
         .update(user)
         .set({ isOnboarded: true })

@@ -146,3 +146,29 @@
 .root {
   isolation: isolate;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.list-item-optimized {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 60px;
+}
+
+.list-item-optimized-sm {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 40px;
+}
+
+.list-item-optimized-lg {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 80px;
+}

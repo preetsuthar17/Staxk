@@ -88,7 +88,6 @@ function SidebarProvider({
         _setOpen(openState);
       }
 
-      // biome-ignore lint/suspicious/noDocumentCookie: Cookie Store API not widely supported yet
       document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
     },
     [setOpenProp, open]
@@ -214,7 +213,6 @@ function Sidebar({
       data-state={state}
       data-variant={variant}
     >
-      {/* This is what handles the sidebar gap on desktop */}
       <div
         className={cn(
           "relative w-(--sidebar-width) bg-transparent transition-[width] duration-200 ease-linear",

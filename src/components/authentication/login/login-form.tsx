@@ -68,17 +68,11 @@ export function LoginForm() {
           const available =
             await PublicKeyCredential.isConditionalMediationAvailable();
           if (available) {
-            authClient.signIn.passkey({ autoFill: true }).catch(() => {
-              // Ignore errors for conditional UI
-            });
+            authClient.signIn.passkey({ autoFill: true }).catch(() => {});
           }
-        } catch {
-          // Conditional UI not available, ignore
-        }
+        } catch {}
       };
-      checkConditionalUI().catch(() => {
-        // Ignore errors for conditional UI check
-      });
+      checkConditionalUI().catch(() => {});
     }
   }, []);
 
@@ -109,7 +103,6 @@ export function LoginForm() {
         return;
       }
 
-      // Check if 2FA verification is required
       if (
         result.data &&
         "twoFactorRedirect" in result.data &&
@@ -119,7 +112,7 @@ export function LoginForm() {
         return;
       }
 
-      router.push("/home");
+      router.push("/");
       router.refresh();
     } catch (error) {
       const errorMessage = getAuthErrorMessage(

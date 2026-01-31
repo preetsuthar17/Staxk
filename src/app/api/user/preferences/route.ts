@@ -31,7 +31,6 @@ export async function PATCH(request: Request) {
       return ERRORS.INVALID_BODY;
     }
 
-    // Get current preferences and merge with new value
     const [currentUser] = await db
       .select({ preferences: user.preferences })
       .from(user)

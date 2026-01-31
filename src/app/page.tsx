@@ -13,24 +13,21 @@ export default async function HomePage() {
   });
 
   if (!sessionData?.user) {
-    redirect("/home");
+    redirect("/");
   }
 
   const userId = sessionData.user.id;
 
-  // Fetch isOnboarded status from database
   const [userData] = await db
     .select({ isOnboarded: user.isOnboarded })
     .from(user)
     .where(eq(user.id, userId))
     .limit(1);
 
-  // Check if user is onboarded
   if (!userData?.isOnboarded) {
     redirect("/onboarding");
   }
 
-  // Get user's workspaces
   const workspaces = await getUserWorkspaces(userId);
 
   if (workspaces.length === 0) {
@@ -38,10 +35,8 @@ export default async function HomePage() {
   }
 
   if (workspaces.length === 1) {
-    // Redirect to the single workspace
     redirect(`/${workspaces[0].slug}`);
   }
 
-  // Multiple workspaces - show selector page
   redirect("/workspaces");
 }

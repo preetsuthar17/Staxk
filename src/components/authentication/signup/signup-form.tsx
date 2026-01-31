@@ -309,7 +309,6 @@ export function SignUpForm() {
 
   return (
     <div className="flex flex-col">
-      {/* biome-ignore lint/a11y/noNoninteractiveElementInteractions: Form is interactive and needs keyboard handling for multi-step navigation */}
       <form
         className="flex flex-col gap-6"
         onKeyDown={handleKeyDown}

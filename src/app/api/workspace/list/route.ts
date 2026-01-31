@@ -2,9 +2,6 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getUserWorkspaces } from "@/lib/workspace";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-
 const ERRORS = {
   UNAUTHORIZED: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
   SERVER_ERROR: NextResponse.json(
@@ -26,7 +23,15 @@ export async function GET(request: Request) {
     const userId = sessionData.user.id;
     const workspaces = await getUserWorkspaces(userId);
 
-    return NextResponse.json({ workspaces }, { status: 200 });
+    return NextResponse.json(
+      { workspaces },
+      {
+        status: 200,
+        headers: {
+          "Cache-Control": "private, max-age=60, stale-while-revalidate=300",
+        },
+      }
+    );
   } catch (error) {
     console.error("Error fetching workspaces:", error);
     return ERRORS.SERVER_ERROR;
