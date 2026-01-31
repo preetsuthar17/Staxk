@@ -226,7 +226,7 @@ export default function ProjectDetailPage() {
                 trigger={
                   <button
                     className={cn(
-                      "group relative flex size-16 items-center justify-center rounded-xl border-2 border-transparent border-dashed text-4xl transition-all hover:border-muted-foreground/30 hover:bg-accent/50",
+                      "group relative flex size-16 items-center justify-center rounded-xl border-2 border-transparent border-dashed text-4xl transition-[color,background-color,border-color,box-shadow] hover:border-muted-foreground/30 hover:bg-accent/50",
                       !project.icon && "border-muted-foreground/20 bg-muted/50"
                     )}
                     disabled={isSavingIcon}

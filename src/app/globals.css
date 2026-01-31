@@ -122,6 +122,15 @@
   }
   body {
     @apply bg-background text-foreground;
+    -webkit-tap-highlight-color: transparent;
+  }
+  button,
+  a,
+  input,
+  select,
+  textarea,
+  [role="button"] {
+    touch-action: manipulation;
   }
   body[data-pointer-cursors="true"] button {
     @apply cursor-pointer;

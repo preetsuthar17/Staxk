@@ -299,7 +299,7 @@ export function TeamSettingsSidebar({
               </div>
               {shouldRenderResults && (
                 <div
-                  className={`absolute top-full right-2 left-2 z-50 mt-1 flex flex-col rounded-md bg-popover text-popover-foreground text-sm shadow-md ring-1 ring-foreground/10 transition-all duration-200 ease-in-out ${
+                  className={`absolute top-full right-2 left-2 z-50 mt-1 flex flex-col rounded-md bg-popover text-popover-foreground text-sm shadow-md ring-1 ring-foreground/10 transition-[transform,opacity] duration-200 ease-in-out ${
                     isResultsVisible
                       ? "scale-100 opacity-100"
                       : "scale-[0.95] opacity-0"

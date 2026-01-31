@@ -147,7 +147,8 @@ export function LoginForm() {
                 autoFocus
                 disabled={isLoading}
                 id={field.name}
-                placeholder="you@example.com or username"
+                placeholder="you@example.com or username…"
+                spellCheck={false}
                 type="text"
               />
             </Label>
@@ -173,7 +174,8 @@ export function LoginForm() {
                   className="flex-1"
                   disabled={isLoading}
                   id={field.name}
-                  placeholder="Enter your password"
+                  placeholder="Enter your password…"
+                  spellCheck={false}
                   type={showPassword ? "text" : "password"}
                 />
                 <Button

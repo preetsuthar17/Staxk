@@ -43,7 +43,7 @@ export function ProjectCard({
 
   return (
     <button
-      className="group flex w-full flex-col gap-3 rounded-xl border bg-card p-4 text-left transition-all hover:bg-accent/50 hover:shadow-md"
+      className="group flex w-full flex-col gap-3 rounded-xl border bg-card p-4 text-left transition-[color,background-color,border-color,box-shadow] hover:bg-accent/50 hover:shadow-md"
       onClick={handleClick}
       type="button"
     >

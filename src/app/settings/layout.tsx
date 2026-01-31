@@ -20,7 +20,7 @@ interface SettingsLayoutProps {
 export default function SettingsLayout({ children }: SettingsLayoutProps) {
   const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
-  const [homeUrl, setHomeUrl] = useState<string>("/");
+  const [_homeUrl, setHomeUrl] = useState<string>("/");
 
   useEffect(() => {
     if (!(isPending || session?.user)) {

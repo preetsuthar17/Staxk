@@ -333,8 +333,10 @@ export function CreateWorkspaceDialog({
                   <Input
                     {...form.register("slug")}
                     aria-invalid={showSlugError ? "true" : "false"}
+                    autoComplete="off"
                     onChange={(e) => handleSlugChange(e.target.value)}
                     placeholder="my-workspace…"
+                    spellCheck={false}
                   />
                   {checkingSlug && (
                     <div className="absolute top-1/2 right-2 -translate-y-1/2">
